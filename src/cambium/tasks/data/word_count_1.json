@@ -1,0 +1,12 @@
+{
+  "id": "word_count_1",
+  "category": "word_count",
+  "split": "train",
+  "prompt": "Write word_count(s) that returns the number of whitespace-separated words in s.",
+  "fn_name": "word_count",
+  "cases": [
+    {"args": ["hello world"], "expected": 2},
+    {"args": [""], "expected": 0},
+    {"args": ["  a  b  c "], "expected": 3}
+  ]
+}

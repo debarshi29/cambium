@@ -1,0 +1,11 @@
+{
+  "id": "string_reverse_2",
+  "category": "string_reverse",
+  "split": "heldout",
+  "prompt": "Write reverse_string(s) that returns the reverse of string s.",
+  "fn_name": "reverse_string",
+  "cases": [
+    {"args": ["racecar"], "expected": "racecar"},
+    {"args": ["Claude"], "expected": "edualC"}
+  ]
+}

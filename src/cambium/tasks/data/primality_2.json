@@ -1,0 +1,12 @@
+{
+  "id": "primality_2",
+  "category": "primality",
+  "split": "train",
+  "prompt": "Write is_prime(n) returning True if n is a prime number.",
+  "fn_name": "is_prime",
+  "cases": [
+    {"args": [0], "expected": false},
+    {"args": [9], "expected": false},
+    {"args": [13], "expected": true}
+  ]
+}

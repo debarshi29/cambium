@@ -1,0 +1,11 @@
+{
+  "id": "gcd_lcm_1",
+  "category": "gcd_lcm",
+  "split": "train",
+  "prompt": "Write gcd_lcm(a, b) returning [gcd(a, b), lcm(a, b)] as a two-element list.",
+  "fn_name": "gcd_lcm",
+  "cases": [
+    {"args": [12, 18], "expected": [6, 36]},
+    {"args": [7, 13], "expected": [1, 91]}
+  ]
+}
