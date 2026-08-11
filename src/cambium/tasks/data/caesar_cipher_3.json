@@ -1,0 +1,11 @@
+{
+  "id": "caesar_cipher_3",
+  "category": "caesar_cipher",
+  "split": "heldout",
+  "prompt": "Write caesar_encrypt(s, shift) that Caesar-shifts lowercase letters of s by shift (mod 26); non-lowercase characters pass through unchanged.",
+  "fn_name": "caesar_encrypt",
+  "cases": [
+    {"args": ["shift", 4], "expected": "wlmjx"},
+    {"args": ["abz", 1], "expected": "bca"}
+  ]
+}
