@@ -12,7 +12,7 @@ against held-out tasks. Full project spec: [`CLAUDE.md`](./CLAUDE.md).
 
 - [x] Sprint 1 — task pack, sandbox runner, skill schema + registry, baseline eval
 - [x] Sprint 2 — admission gates (skills + prompts), candidate generation
-- [ ] Sprint 3 — retrieval layer, recall@k, active prompt version selection
+- [x] Sprint 3 — retrieval layer, recall@k, active prompt version selection
 - [ ] Sprint 4 — curation: dedup, decay deprecation, size cap
 - [ ] Sprint 5 — eval harness: three curves, attribution ablation, hacking audit
 - [ ] Sprint 6 — hardening, final README with results, demo
@@ -44,6 +44,17 @@ python scripts/run_generation_demo.py
 Shows the admission gate rejecting an overfit skill candidate (passes its
 origin task, fails to generalize) and, once the reflector prompt's retry
 budget is raised, admitting the general fix instead.
+
+## Run the Sprint 3 recall@k demo
+
+```bash
+python scripts/run_recall_demo.py
+```
+
+Shows recall@1 catching a genuine, unplanned retrieval collision (two
+skills' docstrings tie on a shared token, alphabetical order picks the
+wrong one), decaying further as decoy skills are added, and recovering at
+higher k — the mechanism the planner prompt's `top_k` slot controls.
 
 ## Important caveats (read before trusting any number)
 
