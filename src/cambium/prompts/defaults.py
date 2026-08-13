@@ -5,6 +5,8 @@ would).
 """
 from __future__ import annotations
 
+import copy
+
 from cambium.prompts.registry import PromptRegistry
 from cambium.prompts.schema import Prompt
 
@@ -53,7 +55,15 @@ CRITIC_V1 = Prompt(
 
 
 def seed_default_registry() -> PromptRegistry:
+    """Fresh Prompt objects every call, deep-copied from the module-level
+    constants. The constants themselves (PLANNER_V1 etc.) must never be
+    inserted into a registry directly — Prompt/PromptStats mutate in place
+    (deprecate flips a field, record_use replaces .stats), and every
+    registry built from the same shared instance would silently see each
+    other's mutations. (Caught by test isolation breaking across
+    tests/test_curation.py cases that each called seed_default_registry()
+    expecting an independent registry.)"""
     registry = PromptRegistry()
     for prompt in (PLANNER_V1, REFLECTOR_V1, CRITIC_V1):
-        registry.add(prompt)
+        registry.add(copy.deepcopy(prompt))
     return registry
