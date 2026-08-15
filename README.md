@@ -14,7 +14,7 @@ against held-out tasks. Full project spec: [`CLAUDE.md`](./CLAUDE.md).
 - [x] Sprint 2 — admission gates (skills + prompts), candidate generation
 - [x] Sprint 3 — retrieval layer, recall@k, active prompt version selection
 - [x] Sprint 4 — curation: dedup, decay deprecation, size cap
-- [ ] Sprint 5 — eval harness: three curves, attribution ablation, hacking audit
+- [x] Sprint 5 — eval harness: three curves, attribution ablation, hacking audit
 - [ ] Sprint 6 — hardening, final README with results, demo
 
 ## Setup
@@ -65,6 +65,30 @@ python scripts/run_curation_demo.py
 Shows all four curation passes in one run: near-duplicate skill merge,
 usage-decay deprecation, a hard size cap, and archiving superseded prompt
 versions — all soft deprecation, nothing deleted from version history.
+
+## Run the Sprint 5 eval harness (the three curves + attribution ablation)
+
+```bash
+python scripts/run_eval.py
+```
+
+Writes `results/eval_report.json` and logs full generation lineage to
+MLflow (`sqlite:///mlruns.db` — `mlflow ui --backend-store-uri
+sqlite:///mlruns.db` to browse it). Headline result from this run:
+
+| curve | held-out (9 tasks) |
+|---|---|
+| library-off | 2/9 (22%) |
+| library-on, evolving (gen 4) | 9/9 (100%) |
+| frozen at generation 2 | 8/9 (89%) — strictly worse than continuing to gen 3+ |
+| tools-only ablation | 2/9 — identical to library-off |
+| prompts-only ablation | 2/9 — identical to library-off, despite 18/18 on train |
+
+Tools-only and prompts-only *each independently* land exactly at the
+library-off floor; only both together reach 9/9. See
+[`docs/adr/0005-eval-only-scoring.md`](docs/adr/0005-eval-only-scoring.md)
+for why prompts-only masters train (18/18) but gains nothing on held-out —
+that gap is the demo's most direct evidence for the project's thesis.
 
 ## Important caveats (read before trusting any number)
 

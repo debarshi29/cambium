@@ -12,12 +12,17 @@
 Condition 1's regression subset is the prompt analogue of "tests pass in
 sandbox" (CLAUDE.md §3.4 note) — so this module, structurally, plays the
 same role for prompts that cambium.skills.admission plays for skills.
+
+Evaluation is node-specific — see docs/adr/0005-eval-only-scoring.md.
+Planner candidates are scored on retrieval + base capability alone;
+reflector/critic candidates go through the full loop.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 
 from cambium.agent.loop import run_task
+from cambium.eval.scoring import score_tasks
 from cambium.prompts.registry import PromptRegistry
 from cambium.prompts.schema import Prompt
 from cambium.skills.registry import SkillRegistry
@@ -46,8 +51,15 @@ def _evaluate(
     """Run every regression task with `prompt` active for `node` (other
     nodes held at whatever is passed in `other_nodes`), against a private
     clone of the skill registry so trial admissions don't leak into
-    production state. Returns {task_id: solved}."""
+    production state. Returns {task_id: solved}.
+
+    `node == "planner"` uses the eval-only scorer (retrieval + base
+    capability, no generation) instead of the full loop — see module
+    docstring / docs/adr/0005."""
     registry = base_skill_registry.clone()
+    if node == "planner":
+        return score_tasks(regression_task_ids, registry, prompt, task_pack)
+
     nodes = dict(other_nodes)
     nodes[node] = prompt
     out = {}

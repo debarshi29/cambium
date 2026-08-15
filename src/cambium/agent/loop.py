@@ -52,7 +52,16 @@ def run_task(
     reflector: Prompt,
     critic: Prompt,
     task_pack: TaskPack,
+    persist_skills: bool = True,
 ) -> LoopOutcome:
+    """`persist_skills=False` is the tools-fixed arm of the Sprint 5
+    tools-vs-prompts attribution ablation (CLAUDE.md §4): the critic still
+    "decides" whether a candidate is novel-success-worthy, but the admission
+    gate is never actually called, so nothing ever enters the registry. Task
+    solving still runs the full loop (generation fallback included) — only
+    persistence is disabled, isolating "does the persistent library add
+    anything beyond what fresh generation gets you" from "can generation
+    solve the task at all"."""
     top_k = planner.params().get("top_k", 1)
     max_attempts = reflector.params().get("max_attempts", 1)
     min_lines = critic.params().get("min_lines", 1)
@@ -82,7 +91,7 @@ def run_task(
                 # extract: critic decides whether to propose a skill candidate
                 already_covered = skill_registry.has_equivalent(task.category, task.fn_name) is not None
                 line_count = len([ln for ln in candidate.source.splitlines() if ln.strip()])
-                if not already_covered and line_count >= min_lines:
+                if persist_skills and not already_covered and line_count >= min_lines:
                     proposed = build_skill_candidate(task, candidate.source, generation)
                     admission_log.append(admit_skill(proposed, skill_registry, task_pack))
                 return LoopOutcome(task.id, True, "generation", admission_attempts=admission_log)

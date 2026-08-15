@@ -4,6 +4,8 @@ retrieved (§3.5's recall@k treatment doesn't apply to prompts).
 """
 from __future__ import annotations
 
+import copy
+
 from cambium.prompts.schema import Prompt
 
 
@@ -39,3 +41,8 @@ class PromptRegistry:
     def record_use(self, node: str, generation: int, won: bool | None) -> None:
         prompt = self.active(node)
         prompt.stats = prompt.stats.record(generation, won)
+
+    def clone(self) -> "PromptRegistry":
+        """Deep copy, used for per-generation snapshots in the eval harness
+        (Sprint 5) — same reasoning as SkillRegistry.clone()."""
+        return copy.deepcopy(self)
