@@ -1,0 +1,11 @@
+{
+  "id": "palindrome_check_2",
+  "category": "palindrome_check",
+  "split": "heldout",
+  "prompt": "Write is_palindrome(s) that returns True if s reads the same forwards and backwards.",
+  "fn_name": "is_palindrome",
+  "cases": [
+    {"args": ["noon"], "expected": true},
+    {"args": ["world"], "expected": false}
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": "camel_snake_1",
+  "category": "camel_snake",
+  "split": "train",
+  "prompt": "Write snake_to_camel(s) converting snake_case to camelCase, e.g. 'hello_world' -> 'helloWorld'.",
+  "fn_name": "snake_to_camel",
+  "cases": [
+    {"args": ["hello_world"], "expected": "helloWorld"},
+    {"args": ["a_b_c"], "expected": "aBC"},
+    {"args": ["single"], "expected": "single"}
+  ]
+}

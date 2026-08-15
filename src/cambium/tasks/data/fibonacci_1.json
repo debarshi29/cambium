@@ -1,0 +1,13 @@
+{
+  "id": "fibonacci_1",
+  "category": "fibonacci",
+  "split": "train",
+  "prompt": "Write fib_n(n) returning the nth Fibonacci number, 0-indexed (fib_n(0)=0, fib_n(1)=1).",
+  "fn_name": "fib_n",
+  "cases": [
+    {"args": [0], "expected": 0},
+    {"args": [1], "expected": 1},
+    {"args": [5], "expected": 5},
+    {"args": [7], "expected": 13}
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "train": {
+    "solved": 4,
+    "total": 14,
+    "rate": 0.2857142857142857,
+    "per_task": {
+      "caesar_cipher_1": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "caesar_cipher_2": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "camel_snake_1": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "fibonacci_1": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "gcd_lcm_1": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "palindrome_check_1": {
+        "solved": true,
+        "reason": "ok"
+      },
+      "primality_1": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "primality_2": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "roman_numeral_1": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "roman_numeral_2": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "run_length_encoding_1": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "string_reverse_1": {
+        "solved": true,
+        "reason": "ok"
+      },
+      "word_count_1": {
+        "solved": true,
+        "reason": "ok"
+      },
+      "word_count_2": {
+        "solved": true,
+        "reason": "ok"
+      }
+    }
+  },
+  "heldout": {
+    "solved": 2,
+    "total": 6,
+    "rate": 0.3333333333333333,
+    "per_task": {
+      "camel_snake_2": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "fibonacci_2": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "gcd_lcm_2": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "palindrome_check_2": {
+        "solved": true,
+        "reason": "ok"
+      },
+      "run_length_encoding_2": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "string_reverse_2": {
+        "solved": true,
+        "reason": "ok"
+      }
+    }
+  }
+}
