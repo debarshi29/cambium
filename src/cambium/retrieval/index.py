@@ -36,9 +36,6 @@ def tokenize(text: str) -> set:
     return {w for w in _WORD_RE.findall(text.lower()) if w not in _STOPWORDS}
 
 
-_tokenize = tokenize  # internal alias, kept short at call sites below
-
-
 @dataclass
 class ScoredSkill:
     skill: Skill
@@ -55,10 +52,10 @@ class RetrievalIndex:
         never source, so this measures description quality, not grepping
         the implementation). Returns up to top_k skills with score > 0,
         highest first; ties broken by skill name for determinism."""
-        query_tokens = _tokenize(task.prompt)
+        query_tokens = tokenize(task.prompt)
         scored = []
         for skill in self._registry.active():
-            skill_tokens = _tokenize(skill.retrieval_text())
+            skill_tokens = tokenize(skill.retrieval_text())
             overlap = len(query_tokens & skill_tokens)
             if overlap > 0:
                 scored.append(ScoredSkill(skill=skill, score=overlap))
