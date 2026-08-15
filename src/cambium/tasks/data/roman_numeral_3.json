@@ -1,0 +1,11 @@
+{
+  "id": "roman_numeral_3",
+  "category": "roman_numeral",
+  "split": "heldout",
+  "prompt": "Write int_to_roman(n) converting an integer 1-3999 to a Roman numeral string.",
+  "fn_name": "int_to_roman",
+  "cases": [
+    {"args": [14], "expected": "XIV"},
+    {"args": [399], "expected": "CCCXCIX"}
+  ]
+}

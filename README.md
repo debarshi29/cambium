@@ -11,7 +11,7 @@ against held-out tasks. Full project spec: [`CLAUDE.md`](./CLAUDE.md).
 ## Sprint checklist
 
 - [x] Sprint 1 — task pack, sandbox runner, skill schema + registry, baseline eval
-- [ ] Sprint 2 — admission gates (skills + prompts), candidate generation
+- [x] Sprint 2 — admission gates (skills + prompts), candidate generation
 - [ ] Sprint 3 — retrieval layer, recall@k, active prompt version selection
 - [ ] Sprint 4 — curation: dedup, decay deprecation, size cap
 - [ ] Sprint 5 — eval harness: three curves, attribution ablation, hacking audit
@@ -19,7 +19,12 @@ against held-out tasks. Full project spec: [`CLAUDE.md`](./CLAUDE.md).
 
 ## Setup
 
+Use a virtualenv — don't install project dependencies into your system/base
+Python.
+
 ```bash
+python -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 python -m pytest
 ```
@@ -29,6 +34,16 @@ python -m pytest
 ```bash
 python scripts/run_baseline.py
 ```
+
+## Run the Sprint 2 generation + admission demo
+
+```bash
+python scripts/run_generation_demo.py
+```
+
+Shows the admission gate rejecting an overfit skill candidate (passes its
+origin task, fails to generalize) and, once the reflector prompt's retry
+budget is raised, admitting the general fix instead.
 
 ## Important caveats (read before trusting any number)
 

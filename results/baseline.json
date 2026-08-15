@@ -1,8 +1,8 @@
 {
   "train": {
     "solved": 4,
-    "total": 14,
-    "rate": 0.2857142857142857,
+    "total": 18,
+    "rate": 0.2222222222222222,
     "per_task": {
       "caesar_cipher_1": {
         "solved": false,
@@ -16,11 +16,23 @@
         "solved": false,
         "reason": "agent_could_not_attempt"
       },
+      "camel_snake_2": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
       "fibonacci_1": {
         "solved": false,
         "reason": "agent_could_not_attempt"
       },
+      "fibonacci_2": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
       "gcd_lcm_1": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "gcd_lcm_2": {
         "solved": false,
         "reason": "agent_could_not_attempt"
       },
@@ -48,6 +60,10 @@
         "solved": false,
         "reason": "agent_could_not_attempt"
       },
+      "run_length_encoding_2": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
       "string_reverse_1": {
         "solved": true,
         "reason": "ok"
@@ -64,18 +80,22 @@
   },
   "heldout": {
     "solved": 2,
-    "total": 6,
-    "rate": 0.3333333333333333,
+    "total": 9,
+    "rate": 0.2222222222222222,
     "per_task": {
-      "camel_snake_2": {
+      "caesar_cipher_3": {
         "solved": false,
         "reason": "agent_could_not_attempt"
       },
-      "fibonacci_2": {
+      "camel_snake_3": {
         "solved": false,
         "reason": "agent_could_not_attempt"
       },
-      "gcd_lcm_2": {
+      "fibonacci_3": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "gcd_lcm_3": {
         "solved": false,
         "reason": "agent_could_not_attempt"
       },
@@ -83,7 +103,15 @@
         "solved": true,
         "reason": "ok"
       },
-      "run_length_encoding_2": {
+      "primality_3": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "roman_numeral_3": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "run_length_encoding_3": {
         "solved": false,
         "reason": "agent_could_not_attempt"
       },

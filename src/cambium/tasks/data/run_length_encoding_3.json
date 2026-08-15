@@ -1,11 +1,10 @@
 {
-  "id": "run_length_encoding_2",
+  "id": "run_length_encoding_3",
   "category": "run_length_encoding",
-  "split": "train",
+  "split": "heldout",
   "prompt": "Write rle_encode(s) returning the run-length encoding of s, e.g. 'aaabbc' -> '3a2b1c'.",
   "fn_name": "rle_encode",
   "cases": [
-    {"args": ["aabbbbcc"], "expected": "2a4b2c"},
-    {"args": ["z"], "expected": "1z"}
+    {"args": ["wwwwaaadexxxxxx"], "expected": "4w3a1d1e6x"}
   ]
 }

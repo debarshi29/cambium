@@ -1,11 +1,11 @@
 {
-  "id": "fibonacci_2",
+  "id": "fibonacci_3",
   "category": "fibonacci",
-  "split": "train",
+  "split": "heldout",
   "prompt": "Write fib_n(n) returning the nth Fibonacci number, 0-indexed (fib_n(0)=0, fib_n(1)=1).",
   "fn_name": "fib_n",
   "cases": [
-    {"args": [10], "expected": 55},
-    {"args": [2], "expected": 1}
+    {"args": [6], "expected": 8},
+    {"args": [9], "expected": 34}
   ]
 }

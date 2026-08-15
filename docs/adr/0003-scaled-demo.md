@@ -11,16 +11,23 @@ in both admission gates — a multi-session effort on its own, independent of
 the agent stand-in question (ADR 0002).
 
 ## Decision
-This session ships a 20-task pack (14 train / 6 held-out — the same ~2:1
-ratio as the full spec) across 10 categories, 2 tasks each. Every category
-has exactly the duplication the admission gates' reuse condition needs
-(CLAUDE.md §3.2 condition 4, §3.4 condition 3): one task to originate a
-skill/prompt candidate on, at least one more to demonstrate reuse on. Three
-categories (`string_reverse`, `word_count`, `palindrome_check`) are solvable
-by the agent's base capabilities with no library at all, by design — this is
-what makes the library-off baseline non-trivial (CLAUDE.md §4 curve 1)
-instead of scoring zero, and what makes any measured lift from the library
-attributable to the library rather than to the floor being zero.
+This session ships a 27-task pack (18 train / 9 held-out — the same 2:1
+ratio as the full spec) across 10 categories. The 7 categories that require
+a synthesized skill (everything except the 3 base-capability categories
+below) get **3 tasks each: 2 train + 1 held-out** — not 2 total — because
+the admission gate's reuse check (CLAUDE.md §3.2 condition 4) must never
+touch held-out tasks (see docs/adr/0004 on discipline boundaries; enforced
+by `test_skill_categories_have_two_train_tasks_for_admission_reuse_check`).
+Two train tasks per category give the origin task and an in-train reuse
+target; the held-out task exists purely to measure whether an admitted
+skill generalizes, never to admit it. The 3 base-capability categories
+(`string_reverse`, `word_count`, `palindrome_check`) don't go through
+admission at all, so they keep 2 tasks each. Those three categories are
+solvable by the agent's base capabilities with no library at all, by
+design — this is what makes the library-off baseline non-trivial
+(CLAUDE.md §4 curve 1) instead of scoring zero, and what makes any measured
+lift from the library attributable to the library rather than to the floor
+being zero.
 
 ## Consequences
 - Curves and the attribution ablation in this repo are real but small-n —

@@ -1,11 +1,11 @@
 {
-  "id": "camel_snake_2",
+  "id": "camel_snake_3",
   "category": "camel_snake",
-  "split": "train",
+  "split": "heldout",
   "prompt": "Write snake_to_camel(s) converting snake_case to camelCase, e.g. 'hello_world' -> 'helloWorld'.",
   "fn_name": "snake_to_camel",
   "cases": [
-    {"args": ["convert_this_string"], "expected": "convertThisString"},
-    {"args": ["x_y"], "expected": "xY"}
+    {"args": ["make_http_request"], "expected": "makeHttpRequest"},
+    {"args": ["a_bb_ccc"], "expected": "aBbCcc"}
   ]
 }
