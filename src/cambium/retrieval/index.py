@@ -29,8 +29,14 @@ _STOPWORDS = frozenset({
 })
 
 
-def _tokenize(text: str) -> set:
+def tokenize(text: str) -> set:
+    """Shared with cambium.curation for its near-duplicate-signature check —
+    dedup at curation time and retrieval scoring both need the same notion
+    of "what words does this text contain," so there's one definition."""
     return {w for w in _WORD_RE.findall(text.lower()) if w not in _STOPWORDS}
+
+
+_tokenize = tokenize  # internal alias, kept short at call sites below
 
 
 @dataclass

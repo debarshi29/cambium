@@ -13,7 +13,7 @@ against held-out tasks. Full project spec: [`CLAUDE.md`](./CLAUDE.md).
 - [x] Sprint 1 — task pack, sandbox runner, skill schema + registry, baseline eval
 - [x] Sprint 2 — admission gates (skills + prompts), candidate generation
 - [x] Sprint 3 — retrieval layer, recall@k, active prompt version selection
-- [ ] Sprint 4 — curation: dedup, decay deprecation, size cap
+- [x] Sprint 4 — curation: dedup, decay deprecation, size cap
 - [ ] Sprint 5 — eval harness: three curves, attribution ablation, hacking audit
 - [ ] Sprint 6 — hardening, final README with results, demo
 
@@ -55,6 +55,16 @@ Shows recall@1 catching a genuine, unplanned retrieval collision (two
 skills' docstrings tie on a shared token, alphabetical order picks the
 wrong one), decaying further as decoy skills are added, and recovering at
 higher k — the mechanism the planner prompt's `top_k` slot controls.
+
+## Run the Sprint 4 curation demo
+
+```bash
+python scripts/run_curation_demo.py
+```
+
+Shows all four curation passes in one run: near-duplicate skill merge,
+usage-decay deprecation, a hard size cap, and archiving superseded prompt
+versions — all soft deprecation, nothing deleted from version history.
 
 ## Important caveats (read before trusting any number)
 
