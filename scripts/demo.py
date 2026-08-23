@@ -6,10 +6,11 @@ Sprint 6's done-when criterion).
 Run:
     python scripts/demo.py
 """
-import _pathfix  # noqa: F401
 import subprocess
 import sys
 from pathlib import Path
+
+import _pathfix  # noqa: F401
 
 SCRIPTS_DIR = Path(__file__).resolve().parent
 STEPS = [

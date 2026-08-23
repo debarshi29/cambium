@@ -1,4 +1,4 @@
-from cambium.agent.generation import CATEGORY_DOCSTRING, candidates_for
+from cambium.agent.generation import candidates_for
 from cambium.agent.loop import build_skill_candidate
 from cambium.eval.scoring import retrieval_or_base_solved, score_tasks
 from cambium.prompts.defaults import PLANNER_V1

@@ -19,7 +19,7 @@ reflector/critic candidates go through the full loop.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from cambium.agent.loop import run_task
 from cambium.eval.scoring import score_tasks

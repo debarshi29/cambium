@@ -42,7 +42,7 @@ class PromptRegistry:
         prompt = self.active(node)
         prompt.stats = prompt.stats.record(generation, won)
 
-    def clone(self) -> "PromptRegistry":
+    def clone(self) -> PromptRegistry:
         """Deep copy, used for per-generation snapshots in the eval harness
         (Sprint 5) — same reasoning as SkillRegistry.clone()."""
         return copy.deepcopy(self)

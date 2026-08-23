@@ -80,7 +80,8 @@ def dedup_skills(registry: SkillRegistry, threshold: float = DEFAULT_DEDUP_SIMIL
 
 
 def _rank_pair(a, b):
-    key = lambda s: (s.stats.success_rate, s.stats.invocations, s.name)
+    def key(s):
+        return (s.stats.success_rate, s.stats.invocations, s.name)
     return (a, b) if key(a) >= key(b) else (b, a)
 
 

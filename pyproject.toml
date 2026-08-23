@@ -1,3 +1,44 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cambium"
+version = "0.7.0"
+description = "A self-evolving agent whose tool/skill library and prompt library are admission-gated, retrieved, curated, and evaluated against held-out tasks."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.13"
+authors = [{ name = "Debarshi Chakraborty" }]
+dependencies = [
+    "mlflow-skinny>=3.0",
+    "sqlalchemy>=2.0",
+    "alembic>=1.13",
+    "requests>=2.31",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=9.0", "ruff>=0.6"]
+
+[project.urls]
+Repository = "https://github.com/debarshi29/cambium"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+# generated/candidate source strings in agent/generation.py and the LLM
+# prompt bodies in agent/llm_generation.py read as code to a linter but
+# aren't meant to be reformatted -- excluded from the import-sort/style
+# rules that would otherwise fight with deliberately-quoted string content.
+ignore = ["E501"]
