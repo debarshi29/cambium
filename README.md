@@ -55,6 +55,10 @@ support.
 
 ## Results
 
+**[→ Interactive results dashboard](https://claude.ai/code/artifact/bcd4a571-b7e1-4f6a-a0da-89590c3c3edf)** — the
+same numbers below as a hoverable trajectory chart, a final-state
+comparison, and the reward-hacking audit, in one page.
+
 ### The three curves + attribution ablation
 
 `CLAUDE.md` §4, measured on the 9-task held-out set:
@@ -190,12 +194,11 @@ python scripts/run_llm_demo.py
 
 ## Architecture
 
-A fixed control loop ([ADR 0001](docs/adr/0001-base-loop-choice.md)):
+A fixed control loop ([ADR 0001](docs/adr/0001-base-loop-choice.md)) —
+node sequence never changes; only each node's active prompt, and what the
+loop can retrieve, evolves:
 
-```
-   plan  →  act  →  verify  →  reflect  →  extract
- (planner)         (sandbox)  (reflector)  (critic)
-```
+![The cambium control loop: plan, act, verify, reflect, extract, with a versioned skill registry and per-node prompt registry feeding it and an admission gate and curation pass gating what enters each](docs/architecture.svg)
 
 Three prompt nodes — `planner`, `reflector`, `critic` — never varied. What
 evolves is the tool/skill library the loop retrieves from and the prompt
