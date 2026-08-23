@@ -45,3 +45,47 @@ def test_chat_retries_then_raises(monkeypatch):
             client.chat("sys", "usr")
 
     assert mock_post.call_count == 2  # initial + 1 retry
+
+
+def test_chat_honors_retry_after_header_on_429(monkeypatch):
+    """A 429 shouldn't fall back to the flat 1s backoff -- it should sleep
+    whatever Retry-After says (plus the small buffer), then succeed on the
+    next attempt. This is the exact failure mode found live against Groq's
+    free-tier token-per-minute limit."""
+    monkeypatch.setenv("GROQ_API_KEY", "test-key")
+    client = GroqClient(retries=1)
+
+    rate_limited = MagicMock(status_code=429, headers={"retry-after": "2"})
+    ok = MagicMock(status_code=200)
+    ok.raise_for_status = MagicMock()
+    ok.json.return_value = {"choices": [{"message": {"content": "ok"}}]}
+
+    with patch(
+        "cambium.agent.llm_client.requests.post",
+        side_effect=[rate_limited, ok],
+    ) as mock_post, patch("cambium.agent.llm_client.time.sleep") as mock_sleep:
+        result = client.chat("sys", "usr")
+
+    assert result == "ok"
+    assert mock_post.call_count == 2
+    mock_sleep.assert_called_once_with(2.5)  # 2 + the 0.5s buffer
+
+
+def test_chat_429_exhausts_retries_raises_http_error(monkeypatch):
+    import requests
+
+    monkeypatch.setenv("GROQ_API_KEY", "test-key")
+    client = GroqClient(retries=1)
+
+    rate_limited = MagicMock(status_code=429, headers={})
+    rate_limited.raise_for_status.side_effect = requests.HTTPError("429")
+
+    with patch(
+        "cambium.agent.llm_client.requests.post",
+        return_value=rate_limited,
+    ) as mock_post, patch("cambium.agent.llm_client.time.sleep") as mock_sleep:
+        with pytest.raises(requests.HTTPError):
+            client.chat("sys", "usr")
+
+    assert mock_post.call_count == 2  # initial + 1 retry, then raises
+    mock_sleep.assert_called_once_with(5.0)  # no Retry-After header -> fallback wait
