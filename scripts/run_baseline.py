@@ -3,9 +3,10 @@
 This is curve 1 of CLAUDE.md §4's three curves. Run:
     python scripts/run_baseline.py
 """
-import _pathfix  # noqa: F401  (must precede cambium imports)
 import json
 from pathlib import Path
+
+import _pathfix  # noqa: F401  (must precede cambium imports)
 
 from cambium.agent.solver import BaseSolver
 from cambium.sandbox.runner import run_in_sandbox

@@ -6,7 +6,6 @@ concern, not schema concern — see cambium.skills.registry).
 from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
-from typing import Any
 
 
 @dataclass
@@ -15,7 +14,7 @@ class SkillStats:
     successes: int = 0
     last_used_generation: int | None = None
 
-    def record(self, generation: int, success: bool) -> "SkillStats":
+    def record(self, generation: int, success: bool) -> SkillStats:
         return replace(
             self,
             invocations=self.invocations + 1,

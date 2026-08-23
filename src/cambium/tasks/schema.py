@@ -17,7 +17,7 @@ class TaskCase:
     expected: Any = None
 
     @staticmethod
-    def from_dict(d: dict) -> "TaskCase":
+    def from_dict(d: dict) -> TaskCase:
         return TaskCase(
             args=tuple(d.get("args", [])),
             kwargs=dict(d.get("kwargs", {})),
@@ -44,7 +44,7 @@ class Task:
             raise ValueError(f"task {self.id!r} has no cases")
 
     @staticmethod
-    def from_dict(d: dict) -> "Task":
+    def from_dict(d: dict) -> Task:
         return Task(
             id=d["id"],
             category=d["category"],

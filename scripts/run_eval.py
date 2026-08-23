@@ -5,9 +5,10 @@ MLflow lineage for the whole run.
 Run:
     python scripts/run_eval.py
 """
-import _pathfix  # noqa: F401
 import json
 from pathlib import Path
+
+import _pathfix  # noqa: F401
 
 from cambium.agent.solver import BaseSolver
 from cambium.eval import lineage

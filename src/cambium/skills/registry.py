@@ -64,7 +64,7 @@ class SkillRegistry:
     def __len__(self) -> int:
         return len(self.active())
 
-    def clone(self) -> "SkillRegistry":
+    def clone(self) -> SkillRegistry:
         """Deep copy, used by prompt admission (§3.4) to evaluate a
         candidate on a regression subset without letting trial-run skill
         admissions leak into the registry actually driving production

@@ -8,7 +8,8 @@ evaluated against held-out tasks.
 
 ![Python 3.13+](https://img.shields.io/badge/python-3.13%2B-blue)
 ![status: scaled demo](https://img.shields.io/badge/status-scaled%20demo-yellow)
-![license: unlicensed](https://img.shields.io/badge/license-unlicensed-lightgrey)
+[![CI](https://github.com/debarshi29/cambium/actions/workflows/ci.yml/badge.svg)](https://github.com/debarshi29/cambium/actions/workflows/ci.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
 </div>
 
@@ -128,7 +129,16 @@ system/base Python.
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-python -m pytest                 # 68 tests, ~80s
+python -m pytest                 # 82 tests, ~80s
+ruff check .                     # lint, same check CI runs
+```
+
+Scripts under `scripts/` run directly against `src/` with no install step
+(each starts with `import _pathfix`). To `import cambium` from elsewhere
+instead, install it as a package:
+
+```bash
+pip install -e ".[dev]"
 ```
 
 ### Run everything

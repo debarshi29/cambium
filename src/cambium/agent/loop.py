@@ -16,7 +16,7 @@ from cambium.prompts.registry import PromptRegistry
 from cambium.prompts.schema import Prompt
 from cambium.retrieval.index import RetrievalIndex
 from cambium.sandbox.runner import run_in_sandbox
-from cambium.skills.admission import AdmissionResult, admit_skill
+from cambium.skills.admission import admit_skill
 from cambium.skills.registry import SkillRegistry
 from cambium.skills.schema import Skill
 from cambium.tasks.pack import TaskPack

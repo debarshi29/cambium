@@ -25,7 +25,7 @@ class PromptStats:
     losses_vs_parent: int = 0
     last_used_generation: int | None = None
 
-    def record(self, generation: int, won: bool | None) -> "PromptStats":
+    def record(self, generation: int, won: bool | None) -> PromptStats:
         return replace(
             self,
             invocations=self.invocations + 1,
