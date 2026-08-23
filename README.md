@@ -29,6 +29,7 @@ evaluated against held-out tasks.
 - [Quickstart](#quickstart)
 - [Live LLM path](#live-llm-path)
 - [Architecture](#architecture)
+- [Design docs (HLD / LLD)](#design-docs-hld--lld)
 - [Design decisions (ADRs)](#design-decisions-adrs)
 - [Project history](#project-history)
 
@@ -221,6 +222,22 @@ cambium/
 Every module's docstring points back to the `CLAUDE.md` section or ADR
 that motivates it — start there, not in the source, if something needs
 justifying.
+
+---
+
+## Design docs (HLD / LLD)
+
+- **[High-Level Design](docs/HLD.md)** — system context, component
+  architecture, data flow (with sequence diagrams), and the
+  non-functional requirements (sandboxing, determinism, auditability)
+  that shaped them.
+- **[Low-Level Design](docs/LLD.md)** — module-by-module: schemas, method
+  contracts, the exact admission-gate/curation/retrieval algorithms and
+  thresholds, plus a table of every bug found and fixed during the build,
+  and which test file covers which module.
+
+Both are generated from the code as it stands, not aspirational —
+if either drifts from `src/cambium/`, the code wins.
 
 ---
 
