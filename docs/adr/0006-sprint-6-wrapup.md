@@ -67,9 +67,14 @@ near-duplicates over many generations — noted here rather than silently
 left for someone to discover the gap.
 
 ## Next steps, in priority order
-1. Real LLM behind `Solver.attempt` (ADR 0002's seam) — the single highest-
-   leverage change, since every other number in this repo is currently a
-   statement about the harness, not about generation quality.
+1. ~~Real LLM behind `Solver.attempt` (ADR 0002's seam)~~ — **done for the
+   agent loop itself**, see `docs/adr/0007-live-llm-integration.md`: a live
+   Groq-backed path now solves real tasks through the real admission gate,
+   with zero changes to admission/retrieval/curation code. **Not yet done**
+   for the eval curves — those still run the scripted stand-in on purpose
+   (determinism, cost, reproducibility; ADR 0007's rationale). Running the
+   harness itself through the live path, seeded and repeated, as an
+   explicitly separate fourth curve is the next real step here.
 2. Task pack to spec size (60 tasks) — mechanical, not architectural.
 3. A curation stress scenario: either the larger pack or a synthetic noisy
    generator, run for 20+ generations, to actually test the "library stays

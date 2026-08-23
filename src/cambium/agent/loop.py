@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 
 from cambium.agent.base_capabilities import base_capability_source, has_base_capability
 from cambium.agent.generation import CATEGORY_DOCSTRING, candidates_for, has_generation_bank
+from cambium.agent.llm_generation import llm_critic_is_general, llm_generate
 from cambium.prompts.registry import PromptRegistry
 from cambium.prompts.schema import Prompt
 from cambium.retrieval.index import RetrievalIndex
@@ -98,6 +99,65 @@ def run_task(
         return LoopOutcome(task.id, False, "none", admission_attempts=admission_log)
 
     return LoopOutcome(task.id, False, "none")
+
+
+def run_task_llm(
+    task: Task,
+    generation: int,
+    skill_registry: SkillRegistry,
+    planner: Prompt,
+    reflector: Prompt,
+    critic: Prompt,
+    task_pack: TaskPack,
+    client,
+    persist_skills: bool = True,
+) -> LoopOutcome:
+    """Live-LLM counterpart to `run_task`: the identical node sequence
+    (docs/adr/0001) and identical retrieval / base-capability / admission-
+    gate mechanics, but the generation fallback calls a real model
+    (`cambium.agent.llm_generation`) instead of pulling from the scripted
+    `CANDIDATE_BANK`, and the critic's propose-or-not decision asks the
+    model too, instead of the `min_lines` heuristic. Everything upstream of
+    generation and the admission gate itself are untouched -- this is the
+    ADR 0002 seam, exercised for real. `client` is a `GroqClient` (or any
+    object with a matching `.chat(system, user) -> str` method, e.g. a test
+    stub). Not used by the reproducible eval curves in the README (a live
+    model call is neither deterministic nor free, CLAUDE.md §6); see
+    scripts/run_llm_demo.py for the entry point that does use it."""
+    top_k = planner.params().get("top_k", 1)
+    max_attempts = reflector.params().get("max_attempts", 1)
+
+    # plan + act: retrieve candidate skills, try each in ranked order
+    index = RetrievalIndex(skill_registry)
+    for scored in index.query(task, top_k):
+        skill = scored.skill
+        result = run_in_sandbox(skill.source, skill.fn_name, task.cases_as_dicts())
+        skill_registry.record_use(skill.name, generation, result.ok)
+        if result.ok:
+            return LoopOutcome(task.id, True, "skill_reuse", skill_used=skill.name)
+
+    # act: base capability
+    if has_base_capability(task.category):
+        source = base_capability_source(task.category)
+        result = run_in_sandbox(source, task.fn_name, task.cases_as_dicts())
+        if result.ok:
+            return LoopOutcome(task.id, True, "base_capability")
+
+    # act + reflect: live generation, bounded by the reflector's retry budget
+    admission_log = []
+    prior_source, prior_error = None, None
+    for _attempt in range(max_attempts):
+        source = llm_generate(task, client, prior_source, prior_error)
+        result = run_in_sandbox(source, task.fn_name, task.cases_as_dicts())
+        if result.ok:
+            # extract: critic decides (live) whether to propose a skill candidate
+            already_covered = skill_registry.has_equivalent(task.category, task.fn_name) is not None
+            if persist_skills and not already_covered and llm_critic_is_general(source, task, client):
+                proposed = build_skill_candidate(task, source, generation)
+                admission_log.append(admit_skill(proposed, skill_registry, task_pack))
+            return LoopOutcome(task.id, True, "generation", admission_attempts=admission_log)
+        prior_source, prior_error = source, (result.stderr or result.stdout)
+    return LoopOutcome(task.id, False, "none", admission_attempts=admission_log)
 
 
 def run_task_with_registry(

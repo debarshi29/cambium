@@ -26,6 +26,7 @@ evaluated against held-out tasks.
 - [Read this first](#read-this-first)
 - [Results](#results)
 - [Quickstart](#quickstart)
+- [Live LLM path](#live-llm-path)
 - [Architecture](#architecture)
 - [Design decisions (ADRs)](#design-decisions-adrs)
 - [Project history](#project-history)
@@ -41,7 +42,7 @@ below:
 
 | | |
 |---|---|
-| 🤖 **Scripted agent, not a live model.** | What this repo measures is the library harness — admission gates, retrieval, curation, evaluation — operating on a deterministic generator, not an LLM's code-generation or self-improvement ability. → [ADR 0002](docs/adr/0002-agent-stand-in.md) |
+| 🤖 **The curves below are a scripted agent, not a live model.** | The three curves and the attribution ablation measure the library harness — admission gates, retrieval, curation, evaluation — operating on a deterministic generator, not an LLM's code-generation ability. A live path *does* exist ([ADR 0007](docs/adr/0007-live-llm-integration.md)) but is kept out of the reported curves on purpose (determinism, cost, reproducibility). → [ADR 0002](docs/adr/0002-agent-stand-in.md) |
 | 📦 **27 tasks, not ~60.** | Read every percentage below as "N of 27," not as a statistically powered result. → [ADR 0003](docs/adr/0003-scaled-demo.md) |
 | 🔒 **Subprocess isolation, not containers.** | Candidate code runs in a scrubbed-environment child process with a hard timeout — real isolation, but not the container tier `CLAUDE.md` prefers. → [ADR 0004](docs/adr/0004-sandbox-tier.md) |
 
@@ -156,6 +157,27 @@ mlflow ui --backend-store-uri sqlite:///mlruns.db
 
 ---
 
+## Live LLM path
+
+A real model *can* drive the loop — `cambium.agent.llm_client` +
+`cambium.agent.llm_generation` + `cambium.agent.loop.run_task_llm` wire a
+Groq-backed model through the exact same seam ADR 0002 left for this
+purpose, with zero changes to admission, retrieval, or curation code. It is
+kept separate from the results above on purpose: those curves need to be
+deterministic and reproducible without an API key, and a live model call is
+neither. See [ADR 0007](docs/adr/0007-live-llm-integration.md) for the
+full rationale and a verified run (10/10 demo tasks solved, 7 live-
+generated skills admitted, real reuse check against a second task each).
+
+Try it yourself:
+
+```bash
+cp .env.example .env        # then paste in a Groq API key
+python scripts/run_llm_demo.py
+```
+
+---
+
 ## Architecture
 
 A fixed control loop ([ADR 0001](docs/adr/0001-base-loop-choice.md)):
@@ -176,6 +198,7 @@ cambium/
 ├── skills/       skill schema, versioned registry, admission gate
 ├── prompts/      prompt schema, versioned-per-node registry, admission gate
 ├── agent/        base capabilities, scripted generation stand-in, the loop
+│                 (+ live Groq path: llm_client, llm_generation, run_task_llm)
 ├── retrieval/    keyword-overlap index + recall@k instrumentation
 ├── curation/     dedup, decay deprecation, size cap, version archiving
 └── eval/         eval-only scoring, harness (curves + ablation), hacking
@@ -198,6 +221,7 @@ justifying.
 | [0004](docs/adr/0004-sandbox-tier.md) | Subprocess isolation as the sandbox tier |
 | [0005](docs/adr/0005-eval-only-scoring.md) | Node-specific evaluation path for prompt admission |
 | [0006](docs/adr/0006-sprint-6-wrapup.md) | Sprint 6 wrap-up: what shipped, what didn't, what's next |
+| [0007](docs/adr/0007-live-llm-integration.md) | Live Groq LLM wired through the ADR 0002 seam, kept out of the reported curves |
 
 ---
 

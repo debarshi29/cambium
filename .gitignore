@@ -7,3 +7,4 @@ mlartifacts/
 *.egg-info/
 .venv/
 venv/
+.env

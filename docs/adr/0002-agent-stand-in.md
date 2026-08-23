@@ -37,9 +37,12 @@ candidate that should be rejected, not just candidates that should pass.
 - **The swap-in point is real, not aspirational.** Any object implementing
   `Solver.attempt(task) -> AttemptResult` and a matching candidate-generation
   function can replace the scripted versions without touching admission,
-  retrieval, curation, or eval code. Wiring an actual Claude API call
-  through this interface is the natural next step outside this session's
-  scope, not a redesign.
+  retrieval, curation, or eval code. Confirmed, not just claimed: see
+  `docs/adr/0007-live-llm-integration.md` — a live Groq-backed path
+  (`cambium.agent.llm_client`, `llm_generation`, `loop.run_task_llm`) now
+  exists alongside the scripted one, wired through this exact seam, with
+  zero changes to admission/retrieval/curation code. The README's curves
+  still run the scripted path, deliberately — see ADR 0007's rationale.
 - Every module that depends on this stand-in (`agent/solver.py`,
   `agent/generation.py`) carries a docstring pointing back to this ADR, so
   the limitation surfaces at the point someone would be tempted to trust the
