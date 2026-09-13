@@ -1,0 +1,5 @@
+# Normalize line endings: the repo is developed on Windows and Linux (CI),
+# and the sandbox writes candidate source to disk verbatim.
+* text=auto eol=lf
+*.svg text eol=lf
+*.png binary
