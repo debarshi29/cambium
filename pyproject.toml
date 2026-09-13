@@ -4,12 +4,24 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cambium"
-version = "0.7.0"
+dynamic = ["version"]
 description = "A self-evolving agent whose tool/skill library and prompt library are admission-gated, retrieved, curated, and evaluated against held-out tasks."
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.13"
 authors = [{ name = "Debarshi Chakraborty" }]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+# Runtime dependencies only. Test/lint tooling lives in the `dev` extra /
+# dependency group below -- it was briefly listed here, which made every
+# downstream install of cambium pull pytest and ruff.
 dependencies = [
     "mlflow-skinny>=3.0",
     "sqlalchemy>=2.0",
@@ -19,24 +31,43 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=9.0", "ruff>=0.6"]
+dev = ["pytest>=9.0", "pytest-cov>=6.0", "ruff>=0.6"]
+
+[dependency-groups]
+dev = ["pytest>=9.0", "pytest-cov>=6.0", "ruff>=0.6"]
 
 [project.urls]
 Repository = "https://github.com/debarshi29/cambium"
+Issues = "https://github.com/debarshi29/cambium/issues"
+
+[tool.setuptools.dynamic]
+version = { attr = "cambium.__version__" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+cambium = ["tasks/data/*.json", "retrieval/*.json"]
+
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+
+[tool.coverage.run]
+source = ["cambium"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
 
 [tool.ruff]
 line-length = 100
 target-version = "py313"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP"]
+select = ["E", "F", "I", "UP", "B"]
 # generated/candidate source strings in agent/generation.py and the LLM
 # prompt bodies in agent/llm_generation.py read as code to a linter but
 # aren't meant to be reformatted -- excluded from the import-sort/style
