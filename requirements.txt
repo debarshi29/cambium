@@ -1,7 +1,10 @@
-pytest>=9.0
+# Runtime
 mlflow-skinny>=3.0
 sqlalchemy>=2.0
 alembic>=1.13
 requests>=2.31
 python-dotenv>=1.0
+# Dev / CI (mirrors the `dev` extra in pyproject.toml)
+pytest>=9.0
+pytest-cov>=6.0
 ruff>=0.6
