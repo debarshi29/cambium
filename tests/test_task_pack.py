@@ -1,3 +1,5 @@
+import pytest
+
 from cambium.tasks.pack import load_task_pack
 
 
@@ -46,8 +48,5 @@ def test_skill_categories_have_two_train_tasks_for_admission_reuse_check():
 
 def test_by_id_missing_raises():
     pack = load_task_pack()
-    try:
+    with pytest.raises(KeyError):
         pack.by_id("does_not_exist")
-        assert False, "expected KeyError"
-    except KeyError:
-        pass
