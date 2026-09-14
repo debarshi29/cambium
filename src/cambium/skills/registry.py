@@ -52,6 +52,7 @@ class SkillRegistry:
         for v in self._by_name.get(name, []):
             if v.version == version:
                 v.deprecated = True
+                v.deprecation_reason = reason or None
                 return
         raise KeyError(f"{name}@v{version} not found")
 
@@ -60,6 +61,25 @@ class SkillRegistry:
         if skill is None:
             raise KeyError(name)
         skill.stats = skill.stats.record(generation, success)
+
+    def all_skills(self) -> list[Skill]:
+        """Every version of every skill, deprecated included, in stable
+        (name, version) order -- the full audit history."""
+        return [
+            s
+            for name in sorted(self._by_name)
+            for s in sorted(self._by_name[name], key=lambda s: s.version)
+        ]
+
+    def to_dict(self) -> dict:
+        return {"skills": [s.to_dict() for s in self.all_skills()]}
+
+    @staticmethod
+    def from_dict(d: dict) -> SkillRegistry:
+        registry = SkillRegistry()
+        for raw in d.get("skills", []):
+            registry.add(Skill.from_dict(raw))
+        return registry
 
     def __len__(self) -> int:
         return len(self.active())
