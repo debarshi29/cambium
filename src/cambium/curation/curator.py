@@ -137,7 +137,7 @@ def archive_superseded_prompts(prompt_registry: PromptRegistry) -> list:
         max_version = max(v.version for v in versions)
         for v in versions:
             if v.version != max_version and not v.deprecated:
-                prompt_registry.deprecate(node, v.version)
+                prompt_registry.deprecate(node, v.version, reason="superseded")
                 archived.append((node, v.version))
     return archived
 
@@ -161,7 +161,7 @@ def dedup_prompts(prompt_registry: PromptRegistry) -> list:
             group.sort(key=lambda p: (p.stats.wins_vs_parent, p.version), reverse=True)
             keeper, rest = group[0], group[1:]
             for dupe in rest:
-                prompt_registry.deprecate(node, dupe.version)
+                prompt_registry.deprecate(node, dupe.version, reason="near-duplicate")
                 merged.append((node, keeper.version, dupe.version))
     return merged
 

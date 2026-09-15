@@ -1,0 +1,462 @@
+{
+  "schema_version": 1,
+  "generation": 4,
+  "metadata": {
+    "run": "both-evolving",
+    "generations": 4
+  },
+  "skills": {
+    "skills": [
+      {
+        "name": "caesar_cipher_skill",
+        "signature": "caesar_encrypt(...)",
+        "docstring": "Caesar-shift the lowercase letters of a string by a fixed offset.",
+        "source": "def caesar_encrypt(s, shift):\n    shift = shift % 26\n    return ''.join(\n        chr((ord(c) - 97 + shift) % 26 + 97) if c.islower() else c\n        for c in s\n    )",
+        "fn_name": "caesar_encrypt",
+        "tests": [
+          {
+            "args": [
+              "abc",
+              1
+            ],
+            "kwargs": {},
+            "expected": "bcd"
+          },
+          {
+            "args": [
+              "xyz",
+              3
+            ],
+            "kwargs": {},
+            "expected": "abc"
+          },
+          {
+            "args": [
+              "hello",
+              0
+            ],
+            "kwargs": {},
+            "expected": "hello"
+          }
+        ],
+        "provenance": {
+          "task_id": "caesar_cipher_1",
+          "generation": 2,
+          "category": "caesar_cipher"
+        },
+        "version": 1,
+        "deprecated": false,
+        "deprecation_reason": null,
+        "stats": {
+          "invocations": 9,
+          "successes": 5,
+          "last_used_generation": 4
+        },
+        "fingerprint": "30cf7599d07ac21b"
+      },
+      {
+        "name": "camel_snake_skill",
+        "signature": "snake_to_camel(...)",
+        "docstring": "Convert a snake_case string to camelCase.",
+        "source": "def snake_to_camel(s):\n    parts = s.split('_')\n    return parts[0] + ''.join(p.capitalize() for p in parts[1:])",
+        "fn_name": "snake_to_camel",
+        "tests": [
+          {
+            "args": [
+              "hello_world"
+            ],
+            "kwargs": {},
+            "expected": "helloWorld"
+          },
+          {
+            "args": [
+              "a_b_c"
+            ],
+            "kwargs": {},
+            "expected": "aBC"
+          },
+          {
+            "args": [
+              "single"
+            ],
+            "kwargs": {},
+            "expected": "single"
+          }
+        ],
+        "provenance": {
+          "task_id": "camel_snake_1",
+          "generation": 2,
+          "category": "camel_snake"
+        },
+        "version": 1,
+        "deprecated": false,
+        "deprecation_reason": null,
+        "stats": {
+          "invocations": 7,
+          "successes": 5,
+          "last_used_generation": 4
+        },
+        "fingerprint": "6003723c12cdeea9"
+      },
+      {
+        "name": "fibonacci_skill",
+        "signature": "fib_n(...)",
+        "docstring": "Compute the nth Fibonacci number iteratively, 0-indexed.",
+        "source": "def fib_n(n):\n    a, b = 0, 1\n    for _ in range(n):\n        a, b = b, a + b\n    return a",
+        "fn_name": "fib_n",
+        "tests": [
+          {
+            "args": [
+              0
+            ],
+            "kwargs": {},
+            "expected": 0
+          },
+          {
+            "args": [
+              1
+            ],
+            "kwargs": {},
+            "expected": 1
+          },
+          {
+            "args": [
+              5
+            ],
+            "kwargs": {},
+            "expected": 5
+          },
+          {
+            "args": [
+              7
+            ],
+            "kwargs": {},
+            "expected": 13
+          }
+        ],
+        "provenance": {
+          "task_id": "fibonacci_1",
+          "generation": 2,
+          "category": "fibonacci"
+        },
+        "version": 1,
+        "deprecated": false,
+        "deprecation_reason": null,
+        "stats": {
+          "invocations": 17,
+          "successes": 5,
+          "last_used_generation": 4
+        },
+        "fingerprint": "3cd3e34f35bb991f"
+      },
+      {
+        "name": "gcd_lcm_skill",
+        "signature": "gcd_lcm(...)",
+        "docstring": "Compute the greatest common divisor and least common multiple of two integers.",
+        "source": "def gcd_lcm(a, b):\n    import math\n    g = math.gcd(a, b)\n    return [g, a * b // g]",
+        "fn_name": "gcd_lcm",
+        "tests": [
+          {
+            "args": [
+              12,
+              18
+            ],
+            "kwargs": {},
+            "expected": [
+              6,
+              36
+            ]
+          },
+          {
+            "args": [
+              7,
+              13
+            ],
+            "kwargs": {},
+            "expected": [
+              1,
+              91
+            ]
+          }
+        ],
+        "provenance": {
+          "task_id": "gcd_lcm_1",
+          "generation": 2,
+          "category": "gcd_lcm"
+        },
+        "version": 1,
+        "deprecated": false,
+        "deprecation_reason": null,
+        "stats": {
+          "invocations": 5,
+          "successes": 5,
+          "last_used_generation": 4
+        },
+        "fingerprint": "188d7a30bbbec769"
+      },
+      {
+        "name": "primality_skill",
+        "signature": "is_prime(...)",
+        "docstring": "Test whether an integer is prime by trial division up to its square root.",
+        "source": "def is_prime(n):\n    if n < 2:\n        return False\n    for i in range(2, int(n ** 0.5) + 1):\n        if n % i == 0:\n            return False\n    return True",
+        "fn_name": "is_prime",
+        "tests": [
+          {
+            "args": [
+              2
+            ],
+            "kwargs": {},
+            "expected": true
+          },
+          {
+            "args": [
+              4
+            ],
+            "kwargs": {},
+            "expected": false
+          },
+          {
+            "args": [
+              17
+            ],
+            "kwargs": {},
+            "expected": true
+          },
+          {
+            "args": [
+              1
+            ],
+            "kwargs": {},
+            "expected": false
+          }
+        ],
+        "provenance": {
+          "task_id": "primality_1",
+          "generation": 2,
+          "category": "primality"
+        },
+        "version": 1,
+        "deprecated": false,
+        "deprecation_reason": null,
+        "stats": {
+          "invocations": 4,
+          "successes": 4,
+          "last_used_generation": 4
+        },
+        "fingerprint": "be49daa0574a3c10"
+      },
+      {
+        "name": "roman_numeral_skill",
+        "signature": "int_to_roman(...)",
+        "docstring": "Convert an integer to a Roman numeral string using subtractive notation.",
+        "source": "def int_to_roman(n):\n    vals = [(1000, 'M'), (900, 'CM'), (500, 'D'), (400, 'CD'),\n            (100, 'C'), (90, 'XC'), (50, 'L'), (40, 'XL'),\n            (10, 'X'), (9, 'IX'), (5, 'V'), (4, 'IV'), (1, 'I')]\n    res = ''\n    for v, s in vals:\n        while n >= v:\n            res += s\n            n -= v\n    return res",
+        "fn_name": "int_to_roman",
+        "tests": [
+          {
+            "args": [
+              3
+            ],
+            "kwargs": {},
+            "expected": "III"
+          },
+          {
+            "args": [
+              58
+            ],
+            "kwargs": {},
+            "expected": "LVIII"
+          },
+          {
+            "args": [
+              1994
+            ],
+            "kwargs": {},
+            "expected": "MCMXCIV"
+          }
+        ],
+        "provenance": {
+          "task_id": "roman_numeral_1",
+          "generation": 2,
+          "category": "roman_numeral"
+        },
+        "version": 1,
+        "deprecated": false,
+        "deprecation_reason": null,
+        "stats": {
+          "invocations": 5,
+          "successes": 5,
+          "last_used_generation": 4
+        },
+        "fingerprint": "a130ebe41b07e421"
+      },
+      {
+        "name": "run_length_encoding_skill",
+        "signature": "rle_encode(...)",
+        "docstring": "Run-length encode a string as count+character pairs.",
+        "source": "def rle_encode(s):\n    if not s:\n        return ''\n    out = []\n    cur, cnt = s[0], 1\n    for c in s[1:]:\n        if c == cur:\n            cnt += 1\n        else:\n            out.append(f'{cnt}{cur}')\n            cur, cnt = c, 1\n    out.append(f'{cnt}{cur}')\n    return ''.join(out)",
+        "fn_name": "rle_encode",
+        "tests": [
+          {
+            "args": [
+              "aabbbbcc"
+            ],
+            "kwargs": {},
+            "expected": "2a4b2c"
+          },
+          {
+            "args": [
+              "z"
+            ],
+            "kwargs": {},
+            "expected": "1z"
+          }
+        ],
+        "provenance": {
+          "task_id": "run_length_encoding_2",
+          "generation": 2,
+          "category": "run_length_encoding"
+        },
+        "version": 1,
+        "deprecated": false,
+        "deprecation_reason": null,
+        "stats": {
+          "invocations": 8,
+          "successes": 4,
+          "last_used_generation": 4
+        },
+        "fingerprint": "6723ea62655986ed"
+      }
+    ]
+  },
+  "prompts": {
+    "prompts": [
+      {
+        "name": "critic-default",
+        "node": "critic",
+        "template": "After a novel success (no existing skill already covers this category), propose the winning source as a skill candidate for the admission gate only if it is at least min_lines=1 line(s) long. Do not propose candidates for categories an active skill already covers.",
+        "docstring": "Baseline critic: propose any novel successful solve as a skill candidate.",
+        "eval_task_ids": [],
+        "provenance": {
+          "parent": null,
+          "generation": 0
+        },
+        "version": 1,
+        "deprecated": false,
+        "deprecation_reason": null,
+        "stats": {
+          "invocations": 0,
+          "wins_vs_parent": 0,
+          "losses_vs_parent": 0,
+          "last_used_generation": null
+        }
+      },
+      {
+        "name": "planner-default",
+        "node": "planner",
+        "template": "Before attempting a task, retrieve the top_k=1 highest-scoring skills from the active library whose docstring matches the task's category and prompt text. Attempt retrieved skills in ranked order before falling back to base capabilities or generation.",
+        "docstring": "Baseline planner: retrieve top_k=1 candidate skill before attempting.",
+        "eval_task_ids": [],
+        "provenance": {
+          "parent": null,
+          "generation": 0
+        },
+        "version": 1,
+        "deprecated": true,
+        "deprecation_reason": "superseded",
+        "stats": {
+          "invocations": 0,
+          "wins_vs_parent": 0,
+          "losses_vs_parent": 0,
+          "last_used_generation": null
+        }
+      },
+      {
+        "name": "planner-mutation-gen3",
+        "node": "planner",
+        "template": "Retrieve the top_k=2 highest-scoring skills before attempting.",
+        "docstring": "Scripted mutation proposal at generation 3.",
+        "eval_task_ids": [
+          "caesar_cipher_1",
+          "caesar_cipher_2",
+          "camel_snake_1",
+          "camel_snake_2",
+          "fibonacci_1",
+          "fibonacci_2",
+          "gcd_lcm_1",
+          "gcd_lcm_2",
+          "palindrome_check_1",
+          "primality_1",
+          "primality_2",
+          "roman_numeral_1",
+          "roman_numeral_2",
+          "run_length_encoding_1",
+          "run_length_encoding_2",
+          "string_reverse_1",
+          "word_count_1",
+          "word_count_2"
+        ],
+        "provenance": {
+          "parent": "planner:planner-default@v1",
+          "generation": 3
+        },
+        "version": 2,
+        "deprecated": false,
+        "deprecation_reason": null,
+        "stats": {
+          "invocations": 0,
+          "wins_vs_parent": 0,
+          "losses_vs_parent": 0,
+          "last_used_generation": null
+        }
+      },
+      {
+        "name": "reflector-default",
+        "node": "reflector",
+        "template": "If an attempt fails sandbox verification, you may retry with a new generation candidate up to max_attempts=1 time(s) total before reporting the task unsolved. Do not retry more than this budget allows, even if you believe another attempt would succeed.",
+        "docstring": "Baseline reflector: a single generation attempt, no retry budget.",
+        "eval_task_ids": [],
+        "provenance": {
+          "parent": null,
+          "generation": 0
+        },
+        "version": 1,
+        "deprecated": true,
+        "deprecation_reason": "superseded",
+        "stats": {
+          "invocations": 0,
+          "wins_vs_parent": 0,
+          "losses_vs_parent": 0,
+          "last_used_generation": null
+        }
+      },
+      {
+        "name": "reflector-mutation-gen2",
+        "node": "reflector",
+        "template": "Retry with a new generation candidate up to max_attempts=2 time(s).",
+        "docstring": "Scripted mutation proposal at generation 2.",
+        "eval_task_ids": [
+          "fibonacci_1",
+          "primality_1",
+          "gcd_lcm_1",
+          "roman_numeral_1",
+          "run_length_encoding_1",
+          "caesar_cipher_1",
+          "camel_snake_1"
+        ],
+        "provenance": {
+          "parent": "reflector:reflector-default@v1",
+          "generation": 2
+        },
+        "version": 2,
+        "deprecated": false,
+        "deprecation_reason": null,
+        "stats": {
+          "invocations": 0,
+          "wins_vs_parent": 0,
+          "losses_vs_parent": 0,
+          "last_used_generation": null
+        }
+      }
+    ]
+  }
+}

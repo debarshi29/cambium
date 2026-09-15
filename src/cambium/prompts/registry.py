@@ -31,16 +31,36 @@ class PromptRegistry:
     def all_versions(self, node: str) -> list[Prompt]:
         return list(self._by_node.get(node, []))
 
-    def deprecate(self, node: str, version: int) -> None:
+    def deprecate(self, node: str, version: int, reason: str = "") -> None:
         for v in self._by_node.get(node, []):
             if v.version == version:
                 v.deprecated = True
+                v.deprecation_reason = reason or None
                 return
         raise KeyError(f"{node}@v{version} not found")
 
     def record_use(self, node: str, generation: int, won: bool | None) -> None:
         prompt = self.active(node)
         prompt.stats = prompt.stats.record(generation, won)
+
+    def nodes(self) -> list[str]:
+        return sorted(self._by_node)
+
+    def to_dict(self) -> dict:
+        return {
+            "prompts": [
+                p.to_dict()
+                for node in self.nodes()
+                for p in sorted(self._by_node[node], key=lambda p: p.version)
+            ]
+        }
+
+    @staticmethod
+    def from_dict(d: dict) -> PromptRegistry:
+        registry = PromptRegistry()
+        for raw in d.get("prompts", []):
+            registry.add(Prompt.from_dict(raw))
+        return registry
 
     def clone(self) -> PromptRegistry:
         """Deep copy, used for per-generation snapshots in the eval harness

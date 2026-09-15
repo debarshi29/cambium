@@ -13,7 +13,7 @@ side-channel config object the template merely describes.
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field, replace
+from dataclasses import asdict, dataclass, field, replace
 
 _SLOT_RE = re.compile(r"\b(\w+)=(\d+)\b")
 
@@ -34,6 +34,18 @@ class PromptStats:
             last_used_generation=generation,
         )
 
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+    @staticmethod
+    def from_dict(d: dict) -> PromptStats:
+        return PromptStats(
+            invocations=int(d.get("invocations", 0)),
+            wins_vs_parent=int(d.get("wins_vs_parent", 0)),
+            losses_vs_parent=int(d.get("losses_vs_parent", 0)),
+            last_used_generation=d.get("last_used_generation"),
+        )
+
 
 @dataclass
 class Prompt:
@@ -46,6 +58,7 @@ class Prompt:
     version: int = 1
     deprecated: bool = False
     stats: PromptStats = field(default_factory=PromptStats)
+    deprecation_reason: str | None = None  # see Skill.deprecation_reason
 
     def key(self) -> str:
         return f"{self.node}:{self.name}@v{self.version}"
@@ -57,3 +70,32 @@ class Prompt:
 
     def retrieval_text(self) -> str:
         return f"{self.node} {self.name} {self.docstring}"
+
+    def to_dict(self) -> dict:
+        return {
+            "name": self.name,
+            "node": self.node,
+            "template": self.template,
+            "docstring": self.docstring,
+            "eval_task_ids": list(self.eval_task_ids),
+            "provenance": dict(self.provenance),
+            "version": self.version,
+            "deprecated": self.deprecated,
+            "deprecation_reason": self.deprecation_reason,
+            "stats": self.stats.to_dict(),
+        }
+
+    @staticmethod
+    def from_dict(d: dict) -> Prompt:
+        return Prompt(
+            name=d["name"],
+            node=d["node"],
+            template=d["template"],
+            docstring=d["docstring"],
+            eval_task_ids=tuple(d.get("eval_task_ids", ())),
+            provenance=dict(d.get("provenance", {})),
+            version=int(d.get("version", 1)),
+            deprecated=bool(d.get("deprecated", False)),
+            stats=PromptStats.from_dict(d.get("stats", {})),
+            deprecation_reason=d.get("deprecation_reason"),
+        )

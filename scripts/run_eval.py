@@ -14,10 +14,12 @@ from cambium.agent.solver import BaseSolver
 from cambium.eval import lineage
 from cambium.eval.hacking_audit import run_audit
 from cambium.eval.harness import EvolutionConfig, run_evolution, score_frozen_snapshot
+from cambium.library.store import save_library
 from cambium.sandbox.runner import run_in_sandbox
 from cambium.tasks.pack import load_task_pack
 
 RESULTS_PATH = Path(__file__).resolve().parent.parent / "results" / "eval_report.json"
+LIBRARY_PATH = RESULTS_PATH.parent / "library_both_evolving.json"
 GENERATIONS = 4
 FREEZE_AT_GENERATION = 2
 
@@ -107,6 +109,16 @@ def main():
     RESULTS_PATH.parent.mkdir(exist_ok=True)
     RESULTS_PATH.write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(f"\nwritten to {RESULTS_PATH}")
+
+    # The final "both evolving" library, full version history included, so
+    # the result can be inspected or reloaded without re-running evolution.
+    final = both.records[-1]
+    save_library(
+        LIBRARY_PATH, final.skill_registry, final.prompt_registry,
+        generation=final.generation,
+        metadata={"run": "both-evolving", "generations": GENERATIONS},
+    )
+    print(f"library written to {LIBRARY_PATH}")
 
 
 if __name__ == "__main__":

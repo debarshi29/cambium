@@ -67,7 +67,10 @@ def log_library_snapshot(generation: int, skill_registry, prompt_registry) -> No
     snapshot = {
         "generation": generation,
         "active_skills": [
-            {"name": s.name, "version": s.version, "provenance": s.provenance, "stats": vars(s.stats)}
+            {
+                "name": s.name, "version": s.version, "fingerprint": s.fingerprint(),
+                "provenance": s.provenance, "stats": s.stats.to_dict(),
+            }
             for s in skill_registry.active()
         ],
         "active_prompts": {
@@ -76,3 +79,10 @@ def log_library_snapshot(generation: int, skill_registry, prompt_registry) -> No
         },
     }
     mlflow.log_dict(snapshot, f"snapshots/generation_{generation}.json")
+    # Full, reloadable library (cambium.library.store format) alongside the
+    # summary above -- the summary is for eyeballing in the MLflow UI, this
+    # is for `cambium.library.load_library` on the downloaded artifact.
+    from cambium.library.store import LibrarySnapshot
+
+    full = LibrarySnapshot(skill_registry, prompt_registry, generation).to_dict()
+    mlflow.log_dict(full, f"libraries/generation_{generation}.json")
