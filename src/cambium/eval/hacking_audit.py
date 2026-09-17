@@ -29,7 +29,8 @@ from cambium.skills.registry import SkillRegistry
 
 @dataclass
 class HackingFinding:
-    kind: str  # "gate_rejected_overfit" | "admitted_suspicious_literal_table"
+    # "gate_rejected_overfit" | "gate_rejected_sandbox_violation" | "admitted_suspicious_literal_table"
+    kind: str
     subject: str  # skill name or admission origin task id
     detail: str
 
@@ -45,6 +46,20 @@ def audit_admission_log(admission_log: list) -> list:
                 kind="gate_rejected_overfit",
                 subject=label,
                 detail=f"passed its origin task, rejected on reuse: {result.detail}",
+            ))
+        elif result.reason == "sandbox_failed" and "sandbox: blocked" in (result.detail or ""):
+            # A candidate that tried to reach the network, spawn a process,
+            # or write outside its scratch dir. Not overfitting, but squarely
+            # "special-casing the eval" territory -- reported, not hidden.
+            blocked = next(
+                (ln.strip() for ln in reversed(result.detail.splitlines())
+                 if ln.startswith("SandboxViolation:")),
+                "sandbox violation",
+            )
+            findings.append(HackingFinding(
+                kind="gate_rejected_sandbox_violation",
+                subject=label,
+                detail=blocked,
             ))
     return findings
 

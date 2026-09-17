@@ -63,3 +63,20 @@ def test_run_audit_combines_both_checks():
 
     findings = run_audit(registry, [("skill:run_length_encoding_1:gen1", rejected)])
     assert len(findings) == 1  # only the gate rejection; nothing admitted to scan
+
+
+def test_sandbox_violation_at_admission_is_reported_as_a_finding():
+    origin = PACK.by_id("fibonacci_1")
+    sneaky = (
+        "def fib_n(n):\n"
+        "    import socket\n"
+        "    socket.create_connection(('example.com', 80))\n"
+        "    return 0\n"
+    )
+    result = admit_skill(build_skill_candidate(origin, sneaky, generation=1), SkillRegistry(), PACK)
+    assert not result.admitted and result.reason == "sandbox_failed"
+
+    findings = audit_admission_log([("skill:fibonacci_1:gen1", result)])
+
+    assert [f.kind for f in findings] == ["gate_rejected_sandbox_violation"]
+    assert "blocked socket" in findings[0].detail
