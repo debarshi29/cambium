@@ -2,6 +2,8 @@
 
 ## Status
 Accepted (partial — flags future work rather than closing the topic).
+Amended by [ADR 0008](0008-sandbox-hardening.md) (audit hook, rlimits, parent-side
+comparison) and [ADR 0009](0009-container-sandbox.md) (container tier).
 
 ## Context
 CLAUDE.md §6: "Subprocess isolation minimum; container preferred." Container
