@@ -27,6 +27,10 @@ class SandboxViolation(PermissionError):
     pass
 
 
+class SandboxTimeout(BaseException):
+    """BaseException so a candidate's `except Exception:` can't swallow it."""
+
+
 # Audit events refused outright: anything that reaches the network, spawns
 # or signals a process, or loads native code.
 _BLOCKED_PREFIXES = (
@@ -143,6 +147,26 @@ def _apply_rlimits():
             pass  # e.g. RLIMIT_AS is not enforceable on macOS
 
 
+def _arm_alarm():
+    """In-process wall-clock limit (POSIX). The parent enforces its own
+    timeout too; this one lets the harness *report* a timeout cleanly,
+    which matters for the container backend, whose outer timeout has to
+    include container start-up time."""
+    seconds = _LIMITS.get("wall_seconds")
+    try:
+        import signal
+    except ImportError:
+        return
+    if not seconds or not hasattr(signal, "setitimer"):
+        return
+
+    def _on_alarm(signum, frame):
+        raise SandboxTimeout(f"exceeded {seconds}s timeout")
+
+    signal.signal(signal.SIGALRM, _on_alarm)
+    signal.setitimer(signal.ITIMER_REAL, float(seconds))
+
+
 def _write_result(payload):
     path = os.path.join(_HERE, "result.json")
     with open(path, "w", encoding="utf-8") as fh:
@@ -155,6 +179,7 @@ def _error_payload(exc):
         "message": str(exc)[:2000],
         "violation": isinstance(exc, SandboxViolation),
         "memory": isinstance(exc, MemoryError),
+        "timeout": isinstance(exc, SandboxTimeout),
     }
 
 
@@ -167,6 +192,7 @@ def main():
     cases = spec["cases"]
 
     _apply_rlimits()
+    _arm_alarm()
     sys.addaudithook(_audit)
 
     results = []

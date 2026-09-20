@@ -52,3 +52,26 @@ jobs:
         run: pip install -r requirements.txt && pip install --no-deps -e .
       - name: Import smoke test
         run: python -c "import cambium; print(cambium.__version__)"
+
+  sandbox-docker:
+    # The container tier (ADR 0009). Runs the backend tests plus the full
+    # sandbox hardening suite and the skill admission gate with
+    # CAMBIUM_SANDBOX=docker, so both tiers face identical checks.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+      - name: Install
+        run: uv sync --frozen --group dev
+      - name: Pull sandbox image
+        run: docker pull python:3.13-slim
+      - name: Test (docker tier)
+        env:
+          CAMBIUM_SANDBOX: docker
+        run: >-
+          uv run pytest -q
+          tests/test_sandbox_backends.py
+          tests/test_sandbox.py
+          tests/test_skill_admission.py

@@ -36,12 +36,14 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import signal
 import subprocess
 import sys
 import tempfile
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
+from typing import Protocol
 
 DEFAULT_TIMEOUT = 5.0
 _HARNESS_SOURCE = (Path(__file__).parent / "harness_template.py").read_text(encoding="utf-8")
@@ -61,6 +63,7 @@ class SandboxLimits:
             "memory_bytes": self.memory_mb * 1024 * 1024,
             "cpu_seconds": max(1, math.ceil(self.timeout)) + 1,
             "file_size_bytes": max(self.max_output_bytes, 1024 * 1024),
+            "wall_seconds": self.timeout,
         }
 
 
@@ -100,21 +103,30 @@ def _normalize(value):
     return json.loads(json.dumps(value))
 
 
-def _read_capped(path: Path, cap: int) -> str:
-    if not path.exists():
-        return ""
-    with path.open("rb") as fh:
-        data = fh.read(cap + 1)
+def cap_output(data: bytes, cap: int) -> str:
     text = data[:cap].decode("utf-8", errors="replace")
     return text + ("\n[... output truncated ...]" if len(data) > cap else "")
 
 
+def _read_capped(path: Path, cap: int) -> str:
+    if not path.exists():
+        return ""
+    with path.open("rb") as fh:
+        return cap_output(fh.read(cap + 1), cap)
+
+
+_LIMIT_SIGNALS = {
+    getattr(signal, name) for name in ("SIGXCPU", "SIGXFSZ", "SIGKILL", "SIGSEGV")
+    if hasattr(signal, name)
+} | {24, 25, 9, 11}  # POSIX numbers, for exit codes reported from a Linux container
+
+
 def _killed_by_limit(returncode: int) -> bool:
-    limit_signals = {
-        getattr(signal, name) for name in ("SIGXCPU", "SIGXFSZ", "SIGKILL", "SIGSEGV")
-        if hasattr(signal, name)
-    }
-    return returncode < 0 and -returncode in limit_signals
+    """Negative = killed by signal (subprocess.run on POSIX); 128+N = the
+    same thing as reported by `docker run` (137 is the OOM killer)."""
+    if returncode < 0:
+        return -returncode in _LIMIT_SIGNALS
+    return returncode > 128 and (returncode - 128) in _LIMIT_SIGNALS
 
 
 def write_sandbox_dir(workdir: Path, source: str, fn_name: str, cases: list) -> None:
@@ -167,6 +179,8 @@ def judge(
 
     if error.get("violation"):
         reason = "violation"
+    elif error.get("timeout"):
+        reason = "timeout"
     elif error.get("memory"):
         reason = "resource_limit"
     else:
@@ -177,46 +191,104 @@ def judge(
     return SandboxResult(False, reason, stdout, stderr, returncode or 1)
 
 
+class SandboxBackendError(RuntimeError):
+    """The sandbox *infrastructure* failed (e.g. Docker daemon down, image
+    missing) -- distinct from candidate code failing. Raised, never turned
+    into a failed SandboxResult: silently scoring every candidate as broken
+    would look exactly like a generator that never works."""
+
+
+class SandboxBackend(Protocol):
+    name: str
+
+    def run(self, source: str, fn_name: str, cases: list, limits: SandboxLimits) -> SandboxResult: ...
+
+
+class SubprocessBackend:
+    """`python -I -S` child process, scrubbed env, scratch-dir cwd."""
+
+    name = "subprocess"
+    # Extra wall-clock the parent allows beyond limits.timeout, so the
+    # in-child alarm (POSIX) fires first and reports a clean timeout.
+    grace_seconds = 1.0
+
+    def run(self, source: str, fn_name: str, cases: list, limits: SandboxLimits) -> SandboxResult:
+        with tempfile.TemporaryDirectory(prefix="cambium-sbx-") as tmp:
+            workdir = Path(tmp).resolve()
+            write_sandbox_dir(workdir, source, fn_name, cases)
+            out_path, err_path = workdir / "stdout.txt", workdir / "stderr.txt"
+
+            with out_path.open("wb") as out, err_path.open("wb") as err:
+                try:
+                    proc = subprocess.run(
+                        [sys.executable, "-I", "-S", "harness.py", json.dumps(limits.child_config())],
+                        stdin=subprocess.DEVNULL,
+                        stdout=out,
+                        stderr=err,
+                        timeout=limits.timeout + self.grace_seconds,
+                        cwd=workdir,
+                        env={},  # no inherited env: no proxy vars, no credentials, no PATH
+                    )
+                    returncode = proc.returncode
+                except subprocess.TimeoutExpired:
+                    returncode = None
+
+            stdout = _read_capped(out_path, limits.max_output_bytes)
+            stderr = _read_capped(err_path, limits.max_output_bytes)
+            if returncode is None:
+                return SandboxResult(False, "timeout", stdout, f"exceeded {limits.timeout}s timeout", -1)
+            return judge(workdir, cases, stdout, stderr, returncode)
+
+
+_default_backend: SandboxBackend | None = None
+
+
+def backend_from_env() -> SandboxBackend:
+    """CAMBIUM_SANDBOX=subprocess (default) | docker. An unknown value is an
+    error, and so is asking for docker when it isn't usable: a sandbox
+    setting must never silently downgrade to a weaker tier."""
+    choice = os.environ.get("CAMBIUM_SANDBOX", "subprocess").strip().lower()
+    if choice == "subprocess":
+        return SubprocessBackend()
+    if choice == "docker":
+        from cambium.sandbox.docker_backend import DockerBackend
+
+        backend = DockerBackend.from_env()
+        backend.check_available()
+        return backend
+    raise SandboxBackendError(f"unknown CAMBIUM_SANDBOX={choice!r} (expected 'subprocess' or 'docker')")
+
+
+def get_default_backend() -> SandboxBackend:
+    global _default_backend
+    if _default_backend is None:
+        _default_backend = backend_from_env()
+    return _default_backend
+
+
+def set_default_backend(backend: SandboxBackend | None) -> None:
+    """Override the process-wide backend (None = re-read the environment on
+    next use). Used by the CLI's --sandbox flag and by tests."""
+    global _default_backend
+    _default_backend = backend
+
+
 def run_in_sandbox(
     source: str,
     fn_name: str,
     cases: list,
     timeout: float | None = None,
     limits: SandboxLimits | None = None,
+    backend: SandboxBackend | None = None,
 ) -> SandboxResult:
-    """Run `source` (must define `fn_name`) against `cases` in a subprocess.
+    """Run `source` (must define `fn_name`) against `cases` in the sandbox.
 
     `cases` is a list of {"args": [...], "kwargs": {...}, "expected": ...}
     dicts (see cambium.tasks.schema.TaskCase.to_dict). `timeout`, if given,
-    overrides `limits.timeout` (kept for backward compatibility).
+    overrides `limits.timeout` (kept for backward compatibility). `backend`
+    defaults to the process-wide one (see `backend_from_env`).
     """
     limits = limits or DEFAULT_LIMITS
     if timeout is not None:
-        limits = SandboxLimits(timeout=timeout, memory_mb=limits.memory_mb,
-                               max_output_bytes=limits.max_output_bytes)
-
-    with tempfile.TemporaryDirectory(prefix="cambium-sbx-") as tmp:
-        workdir = Path(tmp).resolve()
-        write_sandbox_dir(workdir, source, fn_name, cases)
-        out_path, err_path = workdir / "stdout.txt", workdir / "stderr.txt"
-
-        with out_path.open("wb") as out, err_path.open("wb") as err:
-            try:
-                proc = subprocess.run(
-                    [sys.executable, "-I", "-S", "harness.py", json.dumps(limits.child_config())],
-                    stdin=subprocess.DEVNULL,
-                    stdout=out,
-                    stderr=err,
-                    timeout=limits.timeout,
-                    cwd=workdir,
-                    env={},  # no inherited env: no proxy vars, no credentials, no PATH
-                )
-                returncode = proc.returncode
-            except subprocess.TimeoutExpired:
-                returncode = None
-
-        stdout = _read_capped(out_path, limits.max_output_bytes)
-        stderr = _read_capped(err_path, limits.max_output_bytes)
-        if returncode is None:
-            return SandboxResult(False, "timeout", stdout, f"exceeded {limits.timeout}s timeout", -1)
-        return judge(workdir, cases, stdout, stderr, returncode)
+        limits = replace(limits, timeout=timeout)
+    return (backend or get_default_backend()).run(source, fn_name, cases, limits)
