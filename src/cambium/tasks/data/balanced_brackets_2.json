@@ -1,0 +1,13 @@
+{
+  "id": "balanced_brackets_2",
+  "category": "balanced_brackets",
+  "split": "train",
+  "prompt": "Write is_balanced(s) returning True if every bracket in s ((), [], {}) is closed in the correct order; other characters are ignored.",
+  "fn_name": "is_balanced",
+  "cases": [
+    {"args": ["{[()()]}"], "expected": true},
+    {"args": ["(]"], "expected": false},
+    {"args": ["a(b)c"], "expected": true},
+    {"args": ["[(])"], "expected": false}
+  ]
+}

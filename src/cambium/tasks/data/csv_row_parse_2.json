@@ -1,0 +1,11 @@
+{
+  "id": "csv_row_parse_2",
+  "category": "csv_row_parse",
+  "split": "train",
+  "prompt": "Write parse_csv_row(line) splitting one line of CSV into a list of field strings, honoring double-quoted fields that may contain commas.",
+  "fn_name": "parse_csv_row",
+  "cases": [
+    {"args": ["name,\"Smith, John\",42"], "expected": ["name", "Smith, John", "42"]},
+    {"args": ["one"], "expected": ["one"]}
+  ]
+}

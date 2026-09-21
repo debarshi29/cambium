@@ -1,0 +1,13 @@
+{
+  "id": "anagram_check_1",
+  "category": "anagram_check",
+  "split": "train",
+  "prompt": "Write is_anagram(a, b) returning True if the two strings are anagrams of each other, ignoring case and spaces.",
+  "fn_name": "is_anagram",
+  "cases": [
+    {"args": ["listen", "silent"], "expected": true},
+    {"args": ["aab", "abb"], "expected": false},
+    {"args": ["Dormitory", "dirty room"], "expected": true},
+    {"args": ["abc", "abcd"], "expected": false}
+  ]
+}

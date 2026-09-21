@@ -1,0 +1,12 @@
+{
+  "id": "query_string_parse_1",
+  "category": "query_string_parse",
+  "split": "train",
+  "prompt": "Write parse_query(qs) parsing a URL query string like 'a=1&b=2' into a dict of strings, decoding percent-escapes and '+' as a space.",
+  "fn_name": "parse_query",
+  "cases": [
+    {"args": ["a=1&b=2"], "expected": {"a": "1", "b": "2"}},
+    {"args": ["q=hello+world"], "expected": {"q": "hello world"}},
+    {"args": [""], "expected": {}}
+  ]
+}

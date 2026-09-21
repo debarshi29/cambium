@@ -1,0 +1,11 @@
+{
+  "id": "merge_intervals_3",
+  "category": "merge_intervals",
+  "split": "heldout",
+  "prompt": "Write merge_intervals(intervals) merging all overlapping [start, end] intervals and returning them sorted by start.",
+  "fn_name": "merge_intervals",
+  "cases": [
+    {"args": [[[10, 12], [1, 10], [20, 25]]], "expected": [[1, 12], [20, 25]]},
+    {"args": [[[1, 1]]], "expected": [[1, 1]]}
+  ]
+}

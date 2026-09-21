@@ -1,0 +1,12 @@
+{
+  "id": "digit_sum_2",
+  "category": "digit_sum",
+  "split": "train",
+  "prompt": "Write digit_sum(n) returning the sum of the decimal digits of the integer n, ignoring its sign.",
+  "fn_name": "digit_sum",
+  "cases": [
+    {"args": [-7], "expected": 7},
+    {"args": [1001], "expected": 2},
+    {"args": [505], "expected": 10}
+  ]
+}

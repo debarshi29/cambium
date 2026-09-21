@@ -1,0 +1,11 @@
+{
+  "id": "digit_sum_3",
+  "category": "digit_sum",
+  "split": "heldout",
+  "prompt": "Write digit_sum(n) returning the sum of the decimal digits of the integer n, ignoring its sign.",
+  "fn_name": "digit_sum",
+  "cases": [
+    {"args": [-12345], "expected": 15},
+    {"args": [10], "expected": 1}
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "flatten_list_3",
+  "category": "flatten_list",
+  "split": "heldout",
+  "prompt": "Write flatten(items) returning a flat list of every non-list value in an arbitrarily nested list, in order.",
+  "fn_name": "flatten",
+  "cases": [
+    {"args": [[[[[7]]], 8, [9, [10]]]], "expected": [7, 8, 9, 10]},
+    {"args": [[[], [1], [[2]]]], "expected": [1, 2]}
+  ]
+}
