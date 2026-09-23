@@ -23,6 +23,7 @@ from cambium.retrieval.recall import measure_recall_at_k
 from cambium.skills.registry import SkillRegistry
 from cambium.tasks.pack import TaskPack
 
+
 def reflector_regression_subset(task_pack: TaskPack) -> tuple:
     """One representative train task per generation-bank category -- the
     regression subset for reflector/critic mutations (evaluated through the
