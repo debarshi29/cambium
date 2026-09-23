@@ -1,0 +1,13 @@
+{
+  "id": "int_to_binary_2",
+  "category": "int_to_binary",
+  "split": "train",
+  "prompt": "Write to_binary(n) returning the binary representation of a non-negative integer as a string of 0s and 1s with no prefix.",
+  "fn_name": "to_binary",
+  "cases": [
+    {"args": [1], "expected": "1"},
+    {"args": [255], "expected": "11111111"},
+    {"args": [0], "expected": "0"},
+    {"args": [6], "expected": "110"}
+  ]
+}

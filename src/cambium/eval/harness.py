@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from cambium.agent.generation import has_generation_bank
 from cambium.agent.loop import run_task
 from cambium.curation.curator import run_curation
 from cambium.eval.scoring import score_tasks
@@ -22,12 +23,19 @@ from cambium.retrieval.recall import measure_recall_at_k
 from cambium.skills.registry import SkillRegistry
 from cambium.tasks.pack import TaskPack
 
-# One representative train task per skill category -- the regression subset
-# for reflector/critic mutations (evaluated through the full loop).
-REFLECTOR_REGRESSION_SUBSET = (
-    "fibonacci_1", "primality_1", "gcd_lcm_1", "roman_numeral_1",
-    "run_length_encoding_1", "caesar_cipher_1", "camel_snake_1",
-)
+
+def reflector_regression_subset(task_pack: TaskPack) -> tuple:
+    """One representative train task per generation-bank category -- the
+    regression subset for reflector/critic mutations (evaluated through the
+    full loop). Derived from the pack rather than hardcoded, so growing the
+    pack (docs/adr/0010) grows the subset with it."""
+    seen, out = set(), []
+    for task in task_pack.train:
+        if has_generation_bank(task.category) and task.category not in seen:
+            seen.add(task.category)
+            out.append(task.id)
+    return tuple(out)
+
 
 # Scheduled scripted mutation proposals -- stand-ins for "the LLM looked at
 # the failures and proposed a fix." docs/adr/0002 applies here too: this is
@@ -35,7 +43,9 @@ REFLECTOR_REGRESSION_SUBSET = (
 # generation boundaries so the same schedule is directly comparable across
 # the library-on run and every ablation arm.
 MUTATION_SCHEDULE = {
-    2: ("reflector", 2, REFLECTOR_REGRESSION_SUBSET),
+    # () = resolved at call time: reflector -> reflector_regression_subset,
+    # planner -> all train tasks (see below).
+    2: ("reflector", 2, ()),
     # planner regression subset (3rd tuple element) is overridden to "all
     # train tasks" below at call time: the retrieval collision this
     # mutation fixes (docs/adr/0005) only shows up once primality_skill and
@@ -97,6 +107,8 @@ def run_evolution(task_pack: TaskPack, config: EvolutionConfig, label: str = "ru
             node, value, regression_ids = config.mutation_schedule[gen]
             if node == "planner":
                 regression_ids = planner_regression
+            elif not regression_ids:
+                regression_ids = reflector_regression_subset(task_pack)
             parent = prompt_registry.active(node)
             other_nodes = {n: prompt_registry.active(n) for n in ("planner", "reflector", "critic") if n != node}
             candidate = Prompt(

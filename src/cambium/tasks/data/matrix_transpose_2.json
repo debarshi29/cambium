@@ -1,0 +1,11 @@
+{
+  "id": "matrix_transpose_2",
+  "category": "matrix_transpose",
+  "split": "train",
+  "prompt": "Write transpose(matrix) returning the transpose of a rectangular matrix given as a list of rows.",
+  "fn_name": "transpose",
+  "cases": [
+    {"args": [[[1], [2], [3]]], "expected": [[1, 2, 3]]},
+    {"args": [[[0, 1]]], "expected": [[0], [1]]}
+  ]
+}

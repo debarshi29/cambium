@@ -1,0 +1,12 @@
+{
+  "id": "csv_row_parse_1",
+  "category": "csv_row_parse",
+  "split": "train",
+  "prompt": "Write parse_csv_row(line) splitting one line of CSV into a list of field strings, honoring double-quoted fields that may contain commas.",
+  "fn_name": "parse_csv_row",
+  "cases": [
+    {"args": ["a,b,c"], "expected": ["a", "b", "c"]},
+    {"args": ["\"x, y\",z"], "expected": ["x, y", "z"]},
+    {"args": ["1,,3"], "expected": ["1", "", "3"]}
+  ]
+}

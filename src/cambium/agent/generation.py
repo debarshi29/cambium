@@ -141,6 +141,142 @@ CANDIDATE_BANK: dict[str, tuple[str, ...]] = {
         "    parts = s.split('_')\n"
         "    return parts[0] + ''.join(p.capitalize() for p in parts[1:])",
     ),
+    # --- added with the full 60-task pack (docs/adr/0010) -------------------
+    "anagram_check": (
+        # flawed: compares letter *sets*, so multiplicity is ignored
+        "def is_anagram(a, b):\n"
+        "    return set(a.lower().replace(' ', '')) == set(b.lower().replace(' ', ''))",
+        # correct
+        "def is_anagram(a, b):\n"
+        "    return sorted(a.lower().replace(' ', '')) == sorted(b.lower().replace(' ', ''))",
+    ),
+    "flatten_list": (
+        # flawed: flattens one level only
+        "def flatten(items):\n"
+        "    out = []\n"
+        "    for x in items:\n"
+        "        if isinstance(x, list):\n"
+        "            out.extend(x)\n"
+        "        else:\n"
+        "            out.append(x)\n"
+        "    return out",
+        # correct
+        "def flatten(items):\n"
+        "    out = []\n"
+        "    for x in items:\n"
+        "        if isinstance(x, list):\n"
+        "            out.extend(flatten(x))\n"
+        "        else:\n"
+        "            out.append(x)\n"
+        "    return out",
+    ),
+    "matrix_transpose": (
+        # flawed: assumes a square matrix
+        "def transpose(matrix):\n"
+        "    n = len(matrix)\n"
+        "    return [[matrix[j][i] for j in range(n)] for i in range(n)]",
+        # correct
+        "def transpose(matrix):\n"
+        "    return [list(row) for row in zip(*matrix)]",
+    ),
+    "dedupe_ordered": (
+        # flawed: loses the original order
+        "def dedupe(items):\n"
+        "    return sorted(set(items))",
+        # correct
+        "def dedupe(items):\n"
+        "    seen = set()\n"
+        "    out = []\n"
+        "    for x in items:\n"
+        "        if x not in seen:\n"
+        "            seen.add(x)\n"
+        "            out.append(x)\n"
+        "    return out",
+    ),
+    "digit_sum": (
+        # flawed: chokes on the minus sign of negative numbers
+        "def digit_sum(n):\n"
+        "    return sum(int(ch) for ch in str(n))",
+        # correct
+        "def digit_sum(n):\n"
+        "    return sum(int(ch) for ch in str(abs(n)))",
+    ),
+    "balanced_brackets": (
+        # flawed: counts brackets, ignores nesting order
+        "def is_balanced(s):\n"
+        "    return all(s.count(o) == s.count(c) for o, c in ('()', '[]', '{}'))",
+        # correct
+        "def is_balanced(s):\n"
+        "    opens, closes = '([{', ')]}'\n"
+        "    stack = []\n"
+        "    for ch in s:\n"
+        "        if ch in opens:\n"
+        "            stack.append(ch)\n"
+        "        elif ch in closes:\n"
+        "            if not stack or stack.pop() != opens[closes.index(ch)]:\n"
+        "                return False\n"
+        "    return not stack",
+    ),
+    "int_to_binary": (
+        # flawed: returns '' for zero
+        "def to_binary(n):\n"
+        "    out = ''\n"
+        "    while n > 0:\n"
+        "        out = str(n % 2) + out\n"
+        "        n //= 2\n"
+        "    return out",
+        # correct
+        "def to_binary(n):\n"
+        "    return bin(n)[2:]",
+    ),
+    "merge_intervals": (
+        # flawed: merges in input order without sorting first
+        "def merge_intervals(intervals):\n"
+        "    out = []\n"
+        "    for s, e in intervals:\n"
+        "        if out and s <= out[-1][1]:\n"
+        "            out[-1][1] = max(out[-1][1], e)\n"
+        "        else:\n"
+        "            out.append([s, e])\n"
+        "    return out",
+        # correct
+        "def merge_intervals(intervals):\n"
+        "    out = []\n"
+        "    for s, e in sorted(intervals):\n"
+        "        if out and s <= out[-1][1]:\n"
+        "            out[-1][1] = max(out[-1][1], e)\n"
+        "        else:\n"
+        "            out.append([s, e])\n"
+        "    return out",
+    ),
+    "csv_row_parse": (
+        # flawed: naive split breaks quoted fields
+        "def parse_csv_row(line):\n"
+        "    return line.split(',')",
+        # correct
+        "def parse_csv_row(line):\n"
+        "    import csv\n"
+        "    return next(csv.reader([line]))",
+    ),
+    "query_string_parse": (
+        # flawed: no percent/plus decoding
+        "def parse_query(qs):\n"
+        "    out = {}\n"
+        "    for part in qs.split('&'):\n"
+        "        if part:\n"
+        "            k, _, v = part.partition('=')\n"
+        "            out[k] = v\n"
+        "    return out",
+        # correct
+        "def parse_query(qs):\n"
+        "    from urllib.parse import unquote_plus\n"
+        "    out = {}\n"
+        "    for part in qs.split('&'):\n"
+        "        if part:\n"
+        "            k, _, v = part.partition('=')\n"
+        "            out[unquote_plus(k)] = unquote_plus(v)\n"
+        "    return out",
+    ),
 }
 
 CATEGORY_DOCSTRING: dict[str, str] = {
@@ -151,6 +287,16 @@ CATEGORY_DOCSTRING: dict[str, str] = {
     "run_length_encoding": "Run-length encode a string as count+character pairs.",
     "caesar_cipher": "Caesar-shift the lowercase letters of a string by a fixed offset.",
     "camel_snake": "Convert a snake_case string to camelCase.",
+    "anagram_check": "Check whether two strings are anagrams, ignoring case and spaces.",
+    "flatten_list": "Flatten an arbitrarily nested list into a flat list, preserving order.",
+    "matrix_transpose": "Transpose a rectangular matrix given as a list of rows.",
+    "dedupe_ordered": "Remove duplicate items from a list, keeping first occurrences in order.",
+    "digit_sum": "Sum the decimal digits of an integer, ignoring its sign.",
+    "balanced_brackets": "Check that (), [] and {} brackets are properly nested and closed.",
+    "int_to_binary": "Convert a non-negative integer to its binary digit string.",
+    "merge_intervals": "Merge overlapping [start, end] intervals and sort them by start.",
+    "csv_row_parse": "Split one CSV line into fields, honoring double-quoted fields with commas.",
+    "query_string_parse": "Parse a URL query string into a dict, decoding percent-escapes and plus signs.",
 }
 
 

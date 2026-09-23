@@ -1,0 +1,13 @@
+{
+  "id": "anagram_check_3",
+  "category": "anagram_check",
+  "split": "heldout",
+  "prompt": "Write is_anagram(a, b) returning True if the two strings are anagrams of each other, ignoring case and spaces.",
+  "fn_name": "is_anagram",
+  "cases": [
+    {"args": ["The eyes", "They see"], "expected": true},
+    {"args": ["xxy", "xyy"], "expected": false},
+    {"args": ["", ""], "expected": true},
+    {"args": ["a", "b"], "expected": false}
+  ]
+}

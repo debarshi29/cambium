@@ -1,0 +1,11 @@
+{
+  "id": "query_string_parse_3",
+  "category": "query_string_parse",
+  "split": "heldout",
+  "prompt": "Write parse_query(qs) parsing a URL query string like 'a=1&b=2' into a dict of strings, decoding percent-escapes and '+' as a space.",
+  "fn_name": "parse_query",
+  "cases": [
+    {"args": ["city=New+York&zip=10001"], "expected": {"city": "New York", "zip": "10001"}},
+    {"args": ["a=%26b"], "expected": {"a": "&b"}}
+  ]
+}

@@ -8,6 +8,112 @@
   "skills": {
     "skills": [
       {
+        "name": "anagram_check_skill",
+        "signature": "is_anagram(...)",
+        "docstring": "Check whether two strings are anagrams, ignoring case and spaces.",
+        "source": "def is_anagram(a, b):\n    return sorted(a.lower().replace(' ', '')) == sorted(b.lower().replace(' ', ''))",
+        "fn_name": "is_anagram",
+        "tests": [
+          {
+            "args": [
+              "listen",
+              "silent"
+            ],
+            "kwargs": {},
+            "expected": true
+          },
+          {
+            "args": [
+              "aab",
+              "abb"
+            ],
+            "kwargs": {},
+            "expected": false
+          },
+          {
+            "args": [
+              "Dormitory",
+              "dirty room"
+            ],
+            "kwargs": {},
+            "expected": true
+          },
+          {
+            "args": [
+              "abc",
+              "abcd"
+            ],
+            "kwargs": {},
+            "expected": false
+          }
+        ],
+        "provenance": {
+          "task_id": "anagram_check_1",
+          "generation": 2,
+          "category": "anagram_check"
+        },
+        "version": 1,
+        "deprecated": false,
+        "deprecation_reason": null,
+        "stats": {
+          "invocations": 10,
+          "successes": 5,
+          "last_used_generation": 4
+        },
+        "fingerprint": "d25965b032520d34"
+      },
+      {
+        "name": "balanced_brackets_skill",
+        "signature": "is_balanced(...)",
+        "docstring": "Check that (), [] and {} brackets are properly nested and closed.",
+        "source": "def is_balanced(s):\n    opens, closes = '([{', ')]}'\n    stack = []\n    for ch in s:\n        if ch in opens:\n            stack.append(ch)\n        elif ch in closes:\n            if not stack or stack.pop() != opens[closes.index(ch)]:\n                return False\n    return not stack",
+        "fn_name": "is_balanced",
+        "tests": [
+          {
+            "args": [
+              "([]{})"
+            ],
+            "kwargs": {},
+            "expected": true
+          },
+          {
+            "args": [
+              "([)]"
+            ],
+            "kwargs": {},
+            "expected": false
+          },
+          {
+            "args": [
+              ")("
+            ],
+            "kwargs": {},
+            "expected": false
+          },
+          {
+            "args": [
+              ""
+            ],
+            "kwargs": {},
+            "expected": true
+          }
+        ],
+        "provenance": {
+          "task_id": "balanced_brackets_1",
+          "generation": 2,
+          "category": "balanced_brackets"
+        },
+        "version": 1,
+        "deprecated": false,
+        "deprecation_reason": null,
+        "stats": {
+          "invocations": 5,
+          "successes": 5,
+          "last_used_generation": 4
+        },
+        "fingerprint": "464ba3dbe7081955"
+      },
+      {
         "name": "caesar_cipher_skill",
         "signature": "caesar_encrypt(...)",
         "docstring": "Caesar-shift the lowercase letters of a string by a fixed offset.",
@@ -48,7 +154,7 @@
         "deprecated": false,
         "deprecation_reason": null,
         "stats": {
-          "invocations": 9,
+          "invocations": 12,
           "successes": 5,
           "last_used_generation": 4
         },
@@ -92,11 +198,178 @@
         "deprecated": false,
         "deprecation_reason": null,
         "stats": {
-          "invocations": 7,
+          "invocations": 9,
           "successes": 5,
           "last_used_generation": 4
         },
         "fingerprint": "6003723c12cdeea9"
+      },
+      {
+        "name": "csv_row_parse_skill",
+        "signature": "parse_csv_row(...)",
+        "docstring": "Split one CSV line into fields, honoring double-quoted fields with commas.",
+        "source": "def parse_csv_row(line):\n    import csv\n    return next(csv.reader([line]))",
+        "fn_name": "parse_csv_row",
+        "tests": [
+          {
+            "args": [
+              "a,b,c"
+            ],
+            "kwargs": {},
+            "expected": [
+              "a",
+              "b",
+              "c"
+            ]
+          },
+          {
+            "args": [
+              "\"x, y\",z"
+            ],
+            "kwargs": {},
+            "expected": [
+              "x, y",
+              "z"
+            ]
+          },
+          {
+            "args": [
+              "1,,3"
+            ],
+            "kwargs": {},
+            "expected": [
+              "1",
+              "",
+              "3"
+            ]
+          }
+        ],
+        "provenance": {
+          "task_id": "csv_row_parse_1",
+          "generation": 2,
+          "category": "csv_row_parse"
+        },
+        "version": 1,
+        "deprecated": false,
+        "deprecation_reason": null,
+        "stats": {
+          "invocations": 6,
+          "successes": 5,
+          "last_used_generation": 4
+        },
+        "fingerprint": "051ab09aee908819"
+      },
+      {
+        "name": "dedupe_ordered_skill",
+        "signature": "dedupe(...)",
+        "docstring": "Remove duplicate items from a list, keeping first occurrences in order.",
+        "source": "def dedupe(items):\n    seen = set()\n    out = []\n    for x in items:\n        if x not in seen:\n            seen.add(x)\n            out.append(x)\n    return out",
+        "fn_name": "dedupe",
+        "tests": [
+          {
+            "args": [
+              [
+                3,
+                1,
+                3,
+                2,
+                1
+              ]
+            ],
+            "kwargs": {},
+            "expected": [
+              3,
+              1,
+              2
+            ]
+          },
+          {
+            "args": [
+              []
+            ],
+            "kwargs": {},
+            "expected": []
+          },
+          {
+            "args": [
+              [
+                "b",
+                "a",
+                "b"
+              ]
+            ],
+            "kwargs": {},
+            "expected": [
+              "b",
+              "a"
+            ]
+          }
+        ],
+        "provenance": {
+          "task_id": "dedupe_ordered_1",
+          "generation": 2,
+          "category": "dedupe_ordered"
+        },
+        "version": 1,
+        "deprecated": false,
+        "deprecation_reason": null,
+        "stats": {
+          "invocations": 7,
+          "successes": 5,
+          "last_used_generation": 4
+        },
+        "fingerprint": "1be12d3b941bf75d"
+      },
+      {
+        "name": "digit_sum_skill",
+        "signature": "digit_sum(...)",
+        "docstring": "Sum the decimal digits of an integer, ignoring its sign.",
+        "source": "def digit_sum(n):\n    return sum(int(ch) for ch in str(abs(n)))",
+        "fn_name": "digit_sum",
+        "tests": [
+          {
+            "args": [
+              123
+            ],
+            "kwargs": {},
+            "expected": 6
+          },
+          {
+            "args": [
+              0
+            ],
+            "kwargs": {},
+            "expected": 0
+          },
+          {
+            "args": [
+              -45
+            ],
+            "kwargs": {},
+            "expected": 9
+          },
+          {
+            "args": [
+              9999
+            ],
+            "kwargs": {},
+            "expected": 36
+          }
+        ],
+        "provenance": {
+          "task_id": "digit_sum_1",
+          "generation": 2,
+          "category": "digit_sum"
+        },
+        "version": 1,
+        "deprecated": false,
+        "deprecation_reason": null,
+        "stats": {
+          "invocations": 5,
+          "successes": 5,
+          "last_used_generation": 4
+        },
+        "fingerprint": "548925e03ea96989"
       },
       {
         "name": "fibonacci_skill",
@@ -150,6 +423,91 @@
         "fingerprint": "3cd3e34f35bb991f"
       },
       {
+        "name": "flatten_list_skill",
+        "signature": "flatten(...)",
+        "docstring": "Flatten an arbitrarily nested list into a flat list, preserving order.",
+        "source": "def flatten(items):\n    out = []\n    for x in items:\n        if isinstance(x, list):\n            out.extend(flatten(x))\n        else:\n            out.append(x)\n    return out",
+        "fn_name": "flatten",
+        "tests": [
+          {
+            "args": [
+              [
+                [
+                  1,
+                  [
+                    2,
+                    3
+                  ]
+                ],
+                4
+              ]
+            ],
+            "kwargs": {},
+            "expected": [
+              1,
+              2,
+              3,
+              4
+            ]
+          },
+          {
+            "args": [
+              []
+            ],
+            "kwargs": {},
+            "expected": []
+          },
+          {
+            "args": [
+              [
+                [
+                  []
+                ]
+              ]
+            ],
+            "kwargs": {},
+            "expected": []
+          },
+          {
+            "args": [
+              [
+                1,
+                [
+                  2,
+                  [
+                    3,
+                    [
+                      4
+                    ]
+                  ]
+                ]
+              ]
+            ],
+            "kwargs": {},
+            "expected": [
+              1,
+              2,
+              3,
+              4
+            ]
+          }
+        ],
+        "provenance": {
+          "task_id": "flatten_list_1",
+          "generation": 2,
+          "category": "flatten_list"
+        },
+        "version": 1,
+        "deprecated": false,
+        "deprecation_reason": null,
+        "stats": {
+          "invocations": 5,
+          "successes": 5,
+          "last_used_generation": 4
+        },
+        "fingerprint": "1a705730d41f57b4"
+      },
+      {
         "name": "gcd_lcm_skill",
         "signature": "gcd_lcm(...)",
         "docstring": "Compute the greatest common divisor and least common multiple of two integers.",
@@ -193,6 +551,228 @@
           "last_used_generation": 4
         },
         "fingerprint": "188d7a30bbbec769"
+      },
+      {
+        "name": "int_to_binary_skill",
+        "signature": "to_binary(...)",
+        "docstring": "Convert a non-negative integer to its binary digit string.",
+        "source": "def to_binary(n):\n    return bin(n)[2:]",
+        "fn_name": "to_binary",
+        "tests": [
+          {
+            "args": [
+              5
+            ],
+            "kwargs": {},
+            "expected": "101"
+          },
+          {
+            "args": [
+              0
+            ],
+            "kwargs": {},
+            "expected": "0"
+          },
+          {
+            "args": [
+              8
+            ],
+            "kwargs": {},
+            "expected": "1000"
+          }
+        ],
+        "provenance": {
+          "task_id": "int_to_binary_1",
+          "generation": 2,
+          "category": "int_to_binary"
+        },
+        "version": 1,
+        "deprecated": false,
+        "deprecation_reason": null,
+        "stats": {
+          "invocations": 6,
+          "successes": 5,
+          "last_used_generation": 4
+        },
+        "fingerprint": "224ad52de3440e54"
+      },
+      {
+        "name": "matrix_transpose_skill",
+        "signature": "transpose(...)",
+        "docstring": "Transpose a rectangular matrix given as a list of rows.",
+        "source": "def transpose(matrix):\n    return [list(row) for row in zip(*matrix)]",
+        "fn_name": "transpose",
+        "tests": [
+          {
+            "args": [
+              [
+                [
+                  1,
+                  2,
+                  3
+                ],
+                [
+                  4,
+                  5,
+                  6
+                ]
+              ]
+            ],
+            "kwargs": {},
+            "expected": [
+              [
+                1,
+                4
+              ],
+              [
+                2,
+                5
+              ],
+              [
+                3,
+                6
+              ]
+            ]
+          },
+          {
+            "args": [
+              [
+                [
+                  1
+                ]
+              ]
+            ],
+            "kwargs": {},
+            "expected": [
+              [
+                1
+              ]
+            ]
+          },
+          {
+            "args": [
+              [
+                [
+                  1,
+                  2
+                ],
+                [
+                  3,
+                  4
+                ]
+              ]
+            ],
+            "kwargs": {},
+            "expected": [
+              [
+                1,
+                3
+              ],
+              [
+                2,
+                4
+              ]
+            ]
+          }
+        ],
+        "provenance": {
+          "task_id": "matrix_transpose_1",
+          "generation": 2,
+          "category": "matrix_transpose"
+        },
+        "version": 1,
+        "deprecated": false,
+        "deprecation_reason": null,
+        "stats": {
+          "invocations": 5,
+          "successes": 5,
+          "last_used_generation": 4
+        },
+        "fingerprint": "5a936fbf17238e8e"
+      },
+      {
+        "name": "merge_intervals_skill",
+        "signature": "merge_intervals(...)",
+        "docstring": "Merge overlapping [start, end] intervals and sort them by start.",
+        "source": "def merge_intervals(intervals):\n    out = []\n    for s, e in sorted(intervals):\n        if out and s <= out[-1][1]:\n            out[-1][1] = max(out[-1][1], e)\n        else:\n            out.append([s, e])\n    return out",
+        "fn_name": "merge_intervals",
+        "tests": [
+          {
+            "args": [
+              [
+                [
+                  1,
+                  3
+                ],
+                [
+                  2,
+                  6
+                ],
+                [
+                  8,
+                  10
+                ]
+              ]
+            ],
+            "kwargs": {},
+            "expected": [
+              [
+                1,
+                6
+              ],
+              [
+                8,
+                10
+              ]
+            ]
+          },
+          {
+            "args": [
+              [
+                [
+                  5,
+                  7
+                ],
+                [
+                  1,
+                  2
+                ]
+              ]
+            ],
+            "kwargs": {},
+            "expected": [
+              [
+                1,
+                2
+              ],
+              [
+                5,
+                7
+              ]
+            ]
+          },
+          {
+            "args": [
+              []
+            ],
+            "kwargs": {},
+            "expected": []
+          }
+        ],
+        "provenance": {
+          "task_id": "merge_intervals_1",
+          "generation": 2,
+          "category": "merge_intervals"
+        },
+        "version": 1,
+        "deprecated": false,
+        "deprecation_reason": null,
+        "stats": {
+          "invocations": 5,
+          "successes": 5,
+          "last_used_generation": 4
+        },
+        "fingerprint": "3ff0252f25b03a70"
       },
       {
         "name": "primality_skill",
@@ -244,6 +824,55 @@
           "last_used_generation": 4
         },
         "fingerprint": "be49daa0574a3c10"
+      },
+      {
+        "name": "query_string_parse_skill",
+        "signature": "parse_query(...)",
+        "docstring": "Parse a URL query string into a dict, decoding percent-escapes and plus signs.",
+        "source": "def parse_query(qs):\n    from urllib.parse import unquote_plus\n    out = {}\n    for part in qs.split('&'):\n        if part:\n            k, _, v = part.partition('=')\n            out[unquote_plus(k)] = unquote_plus(v)\n    return out",
+        "fn_name": "parse_query",
+        "tests": [
+          {
+            "args": [
+              "a=1&b=2"
+            ],
+            "kwargs": {},
+            "expected": {
+              "a": "1",
+              "b": "2"
+            }
+          },
+          {
+            "args": [
+              "q=hello+world"
+            ],
+            "kwargs": {},
+            "expected": {
+              "q": "hello world"
+            }
+          },
+          {
+            "args": [
+              ""
+            ],
+            "kwargs": {},
+            "expected": {}
+          }
+        ],
+        "provenance": {
+          "task_id": "query_string_parse_1",
+          "generation": 2,
+          "category": "query_string_parse"
+        },
+        "version": 1,
+        "deprecated": false,
+        "deprecation_reason": null,
+        "stats": {
+          "invocations": 5,
+          "successes": 5,
+          "last_used_generation": 4
+        },
+        "fingerprint": "c0b6779fcb40fa34"
       },
       {
         "name": "roman_numeral_skill",
@@ -376,22 +1005,44 @@
         "template": "Retrieve the top_k=2 highest-scoring skills before attempting.",
         "docstring": "Scripted mutation proposal at generation 3.",
         "eval_task_ids": [
+          "anagram_check_1",
+          "anagram_check_2",
+          "balanced_brackets_1",
+          "balanced_brackets_2",
           "caesar_cipher_1",
           "caesar_cipher_2",
           "camel_snake_1",
           "camel_snake_2",
+          "csv_row_parse_1",
+          "csv_row_parse_2",
+          "dedupe_ordered_1",
+          "dedupe_ordered_2",
+          "digit_sum_1",
+          "digit_sum_2",
           "fibonacci_1",
           "fibonacci_2",
+          "flatten_list_1",
+          "flatten_list_2",
           "gcd_lcm_1",
           "gcd_lcm_2",
+          "int_to_binary_1",
+          "int_to_binary_2",
+          "matrix_transpose_1",
+          "matrix_transpose_2",
+          "merge_intervals_1",
+          "merge_intervals_2",
           "palindrome_check_1",
+          "palindrome_check_3",
           "primality_1",
           "primality_2",
+          "query_string_parse_1",
+          "query_string_parse_2",
           "roman_numeral_1",
           "roman_numeral_2",
           "run_length_encoding_1",
           "run_length_encoding_2",
           "string_reverse_1",
+          "string_reverse_3",
           "word_count_1",
           "word_count_2"
         ],
@@ -435,13 +1086,23 @@
         "template": "Retry with a new generation candidate up to max_attempts=2 time(s).",
         "docstring": "Scripted mutation proposal at generation 2.",
         "eval_task_ids": [
-          "fibonacci_1",
-          "primality_1",
-          "gcd_lcm_1",
-          "roman_numeral_1",
-          "run_length_encoding_1",
+          "anagram_check_1",
+          "balanced_brackets_1",
           "caesar_cipher_1",
-          "camel_snake_1"
+          "camel_snake_1",
+          "csv_row_parse_1",
+          "dedupe_ordered_1",
+          "digit_sum_1",
+          "fibonacci_1",
+          "flatten_list_1",
+          "gcd_lcm_1",
+          "int_to_binary_1",
+          "matrix_transpose_1",
+          "merge_intervals_1",
+          "primality_1",
+          "query_string_parse_1",
+          "roman_numeral_1",
+          "run_length_encoding_1"
         ],
         "provenance": {
           "parent": "reflector:reflector-default@v1",

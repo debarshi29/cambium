@@ -22,4 +22,4 @@ def test_baseline_solutions_actually_pass_sandbox():
             result = run_in_sandbox(attempt.source, attempt.fn_name, task.cases_as_dicts())
             assert result.ok, f"{task.id}: {result.stderr}"
             solved_count += 1
-    assert solved_count == 6  # 3 base categories x 2 tasks each
+    assert solved_count == 9  # 3 base categories x 3 tasks each

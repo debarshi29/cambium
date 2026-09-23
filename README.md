@@ -45,7 +45,7 @@ below:
 | | |
 |---|---|
 | 🤖 **The curves below are a scripted agent, not a live model.** | The three curves and the attribution ablation measure the library harness — admission gates, retrieval, curation, evaluation — operating on a deterministic generator, not an LLM's code-generation ability. A live path *does* exist ([ADR 0007](docs/adr/0007-live-llm-integration.md)) but is kept out of the reported curves on purpose (determinism, cost, reproducibility). → [ADR 0002](docs/adr/0002-agent-stand-in.md) |
-| 📦 **27 tasks, not ~60.** | Read every percentage below as "N of 27," not as a statistically powered result. → [ADR 0003](docs/adr/0003-scaled-demo.md) |
+| 📦 **60 tasks, at spec size — but still small-n.** | 40 train / 20 held-out across 20 categories, as CLAUDE.md §4 specifies. Read every percentage as "N of 20 held-out," not as a statistically powered result. → [ADR 0010](docs/adr/0010-full-task-pack.md) |
 | 🔒 **Subprocess isolation, not containers.** | Candidate code runs in a scrubbed-environment child process with a hard timeout — real isolation, but not the container tier `CLAUDE.md` prefers. → [ADR 0004](docs/adr/0004-sandbox-tier.md) |
 
 [**ADR 0006**](docs/adr/0006-sprint-6-wrapup.md) is the honest scorecard:
@@ -62,15 +62,15 @@ comparison, and the reward-hacking audit, in one page.
 
 ### The three curves + attribution ablation
 
-`CLAUDE.md` §4, measured on the 9-task held-out set:
+`CLAUDE.md` §4, measured on the 20-task held-out set:
 
 | curve | held-out solved |
 |---|---:|
-| **library-off** — fixed toolset, fixed prompts | 2/9 &nbsp;(22%) |
-| **library-on, evolving** — generation 4 | **9/9 (100%)** |
-| **frozen at generation 2**, evaluated onward | 8/9 &nbsp;(89%) |
-| tools-only ablation — skills evolve, prompts fixed | 2/9 &nbsp;(22%) |
-| prompts-only ablation — prompts evolve, skills fixed | 2/9 &nbsp;(22%) |
+| **library-off** — fixed toolset, fixed prompts | 3/20 &nbsp;(15%) |
+| **library-on, evolving** — generation 4 | **20/20 (100%)** |
+| **frozen at generation 2**, evaluated onward | 19/20 &nbsp;(95%) |
+| tools-only ablation — skills evolve, prompts fixed | 3/20 &nbsp;(15%) |
+| prompts-only ablation — prompts evolve, skills fixed | 3/20 &nbsp;(15%) |
 
 ### Generation-by-generation trajectory
 
@@ -78,31 +78,31 @@ The live "both evolving" run:
 
 | generation | train | held-out | active skills | recall@1 | recall@top_k |
 |---|---:|---:|---:|---:|---:|
-| 1 — default prompts | 5/18 | 2/9 | 0 | — | — |
-| 2 — reflector retry budget raised | 18/18 | 8/9 | 7 | 86% | 86% (k=1) |
-| 3 — planner top_k raised | 18/18 | **9/9** | 7 | 86% | **100%** (k=2) |
-| 4 | 18/18 | 9/9 | 7 | 86% | 100% (k=2) |
+| 1 — default prompts | 7/40 | 3/20 | 0 | — | — |
+| 2 — reflector retry budget raised | 40/40 | 19/20 | 17 | 94% | 94% (k=1) |
+| 3 — planner top_k raised | 40/40 | **20/20** | 17 | 94% | **100%** (k=2) |
+| 4 | 40/40 | 20/20 | 17 | 94% | 100% (k=2) |
 
 ### The headline finding
 
 Tools-only and prompts-only **each independently land exactly at the
-library-off floor** (2/9) — not partway between library-off and
-library-on. Only both evolving together reach 9/9. That's a genuine
+library-off floor** (3/20) — not partway between library-off and
+library-on. Only both evolving together reach 20/20. That's a genuine
 interaction effect measured by the actual gate/generation/eval mechanics,
 not curve-fit after the fact:
 
 - **Tools-only** never admits a single skill: the reflector's retry budget
   never gets raised (prompts are fixed), so every flawed-first generation
   candidate fails on attempt one with no retry available.
-- **Prompts-only** reaches **18/18 on train** — the reflector's raised
+- **Prompts-only** reaches **40/40 on train** — the reflector's raised
   retry budget lets fresh generation solve every category, every time —
-  but held-out stays at 2/9, because held-out is scored on retrieval +
+  but held-out stays at 3/20, because held-out is scored on retrieval +
   base capability only, never on fresh generation (see
   [ADR 0005](docs/adr/0005-eval-only-scoring.md)). Task-solving capability
   that isn't *persisted as an admitted skill* doesn't transfer. This is
   the single most direct piece of evidence in this repo for the project's
   thesis.
-- **Frozen-at-2 (8/9) is strictly worse than live-at-3+ (9/9).** A real,
+- **Frozen-at-2 (19/20) is strictly worse than live-at-3+ (20/20).** A real,
   measured retrieval collision — two skills' docstrings tie on a shared
   token, and alphabetical order picks the wrong one for `primality` tasks
   (found empirically while testing, not staged — see
@@ -207,7 +207,7 @@ powering each node:
 
 ```
 cambium/
-├── tasks/        task schema + pack loader (27 tasks, 18 train / 9 heldout)
+├── tasks/        task schema + pack loader (60 tasks, 40 train / 20 heldout)
 ├── sandbox/      subprocess-isolated runner: exec + verify candidate code
 ├── skills/       skill schema, versioned registry, admission gate
 ├── prompts/      prompt schema, versioned-per-node registry, admission gate
@@ -247,11 +247,14 @@ if either drifts from `src/cambium/`, the code wins.
 |---|---|
 | [0001](docs/adr/0001-base-loop-choice.md) | Base control-loop architecture: plan → act → verify → reflect → extract |
 | [0002](docs/adr/0002-agent-stand-in.md) | Deterministic scripted stand-in for the LLM-backed agent |
-| [0003](docs/adr/0003-scaled-demo.md) | Scaled-down 27-task pack for this session's run |
+| [0003](docs/adr/0003-scaled-demo.md) | Scaled-down 27-task pack for the first run (superseded by 0010) |
 | [0004](docs/adr/0004-sandbox-tier.md) | Subprocess isolation as the sandbox tier |
 | [0005](docs/adr/0005-eval-only-scoring.md) | Node-specific evaluation path for prompt admission |
 | [0006](docs/adr/0006-sprint-6-wrapup.md) | Sprint 6 wrap-up: what shipped, what didn't, what's next |
 | [0007](docs/adr/0007-live-llm-integration.md) | Live Groq LLM wired through the ADR 0002 seam, kept out of the reported curves |
+| [0008](docs/adr/0008-sandbox-hardening.md) | Sandbox hardening: unforgeable results, audit hook, resource limits |
+| [0009](docs/adr/0009-container-sandbox.md) | Container (Docker) sandbox tier behind a pluggable backend |
+| [0010](docs/adr/0010-full-task-pack.md) | Task pack grown to spec size: 60 tasks, 40 train / 20 held-out |
 
 ---
 
