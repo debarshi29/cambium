@@ -8,13 +8,13 @@ def test_both_evolving_reaches_full_train_and_heldout_by_generation_3():
     result = run_evolution(PACK, EvolutionConfig(generations=4), "both")
     by_gen = {r.generation: r for r in result.records}
 
-    assert by_gen[1].train_solved == 5
-    assert by_gen[1].heldout_solved == 2  # library-off equivalent
-    assert by_gen[2].train_solved == 18
-    assert by_gen[2].num_active_skills == 7
-    assert by_gen[2].heldout_solved == 8  # retrieval collision still costs 1
-    assert by_gen[3].heldout_solved == 9  # planner mutation fixes it
-    assert by_gen[4].heldout_solved == 9  # plateau
+    assert by_gen[1].train_solved == 7
+    assert by_gen[1].heldout_solved == 3  # library-off equivalent
+    assert by_gen[2].train_solved == 40
+    assert by_gen[2].num_active_skills == 17
+    assert by_gen[2].heldout_solved == 19  # retrieval collision still costs 1
+    assert by_gen[3].heldout_solved == 20  # planner mutation fixes it
+    assert by_gen[4].heldout_solved == 20  # plateau
 
 
 def test_tools_only_ablation_never_beats_library_off():
@@ -23,7 +23,7 @@ def test_tools_only_ablation_never_beats_library_off():
     nothing is ever admitted."""
     result = run_evolution(PACK, EvolutionConfig(generations=4, evolve_skills=True, evolve_prompts=False), "tools_only")
     for record in result.records:
-        assert record.heldout_solved == 2
+        assert record.heldout_solved == 3
         assert record.num_active_skills == 0
 
 
@@ -34,8 +34,8 @@ def test_prompts_only_ablation_masters_train_but_gains_nothing_on_heldout():
     library moves the held-out number."""
     result = run_evolution(PACK, EvolutionConfig(generations=4, evolve_skills=False, evolve_prompts=True), "prompts_only")
     last = result.records[-1]
-    assert last.train_solved == 18   # full train mastery via fresh generation
-    assert last.heldout_solved == 2  # zero heldout lift -- nothing persisted
+    assert last.train_solved == 40   # full train mastery via fresh generation
+    assert last.heldout_solved == 3  # zero heldout lift -- nothing persisted
 
 
 def test_frozen_snapshot_is_strictly_worse_than_continued_evolution():
@@ -44,6 +44,6 @@ def test_frozen_snapshot_is_strictly_worse_than_continued_evolution():
     frozen_score = score_frozen_snapshot(frozen_at_2, PACK)
     live_at_4 = next(r for r in result.records if r.generation == 4)
 
-    assert frozen_score["solved"] == 8
-    assert live_at_4.heldout_solved == 9
+    assert frozen_score["solved"] == 19
+    assert live_at_4.heldout_solved == 20
     assert frozen_score["solved"] < live_at_4.heldout_solved

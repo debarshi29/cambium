@@ -30,7 +30,7 @@ def make_decoy(name: str, docstring: str, category: str = "decoy") -> Skill:
 
 def test_ground_truth_loads_and_matches_skill_categories():
     gt = load_ground_truth()
-    assert len(gt) == 21
+    assert len(gt) == 51
     assert all(name.endswith("_skill") for name in gt.values())
 
 
@@ -44,9 +44,9 @@ def test_recall_at_1_shows_a_genuine_naturally_occurring_collision():
     running the real index, not manufactured for the test."""
     registry = admit_all_correct_skills()
     report = measure_recall_at_k(registry, PACK, k=1, generation=1)
-    assert report.total == 21
+    assert report.total == 51
     assert report.misses == ("primality_1", "primality_2", "primality_3")
-    assert report.recall_at_k == 18 / 21
+    assert report.recall_at_k == 48 / 51
 
     report_k2 = measure_recall_at_k(registry, PACK, k=2, generation=1)
     assert report_k2.misses == ()
