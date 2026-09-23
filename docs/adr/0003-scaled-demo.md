@@ -1,7 +1,8 @@
 # ADR 0003: Scaled-down task pack for this session's run
 
 ## Status
-Accepted.
+Superseded in scale by [ADR 0010](0010-full-task-pack.md) (60 tasks); the
+discipline rules below still apply.
 
 ## Context
 CLAUDE.md §4 specifies ~60 tasks, 40 train / 20 held-out. Producing that at

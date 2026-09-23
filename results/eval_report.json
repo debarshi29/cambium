@@ -1,92 +1,92 @@
 {
   "pack": {
-    "train": 18,
-    "heldout": 9
+    "train": 40,
+    "heldout": 20
   },
   "curve_1_library_off": {
-    "solved": 2,
-    "total": 9
+    "solved": 3,
+    "total": 20
   },
   "curve_2_library_on_evolving": [
     {
       "generation": 1,
-      "train_rate": 0.2777777777777778,
-      "heldout_rate": 0.2222222222222222,
-      "heldout_solved": 2,
-      "heldout_total": 9,
+      "train_rate": 0.175,
+      "heldout_rate": 0.15,
+      "heldout_solved": 3,
+      "heldout_total": 20,
       "num_active_skills": 0,
       "recall_at_1": 0.0
     },
     {
       "generation": 2,
       "train_rate": 1.0,
-      "heldout_rate": 0.8888888888888888,
-      "heldout_solved": 8,
-      "heldout_total": 9,
-      "num_active_skills": 7,
-      "recall_at_1": 0.8571428571428571
+      "heldout_rate": 0.95,
+      "heldout_solved": 19,
+      "heldout_total": 20,
+      "num_active_skills": 17,
+      "recall_at_1": 0.9411764705882353
     },
     {
       "generation": 3,
       "train_rate": 1.0,
       "heldout_rate": 1.0,
-      "heldout_solved": 9,
-      "heldout_total": 9,
-      "num_active_skills": 7,
-      "recall_at_1": 0.8571428571428571,
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "num_active_skills": 17,
+      "recall_at_1": 0.9411764705882353,
       "recall_at_2": 1.0
     },
     {
       "generation": 4,
       "train_rate": 1.0,
       "heldout_rate": 1.0,
-      "heldout_solved": 9,
-      "heldout_total": 9,
-      "num_active_skills": 7,
-      "recall_at_1": 0.8571428571428571,
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "num_active_skills": 17,
+      "recall_at_1": 0.9411764705882353,
       "recall_at_2": 1.0
     }
   ],
   "curve_3_frozen_at_gen": {
     "frozen_at": 2,
-    "solved": 8,
-    "total": 9
+    "solved": 19,
+    "total": 20
   },
   "ablation": {
     "tools_only": [
       {
         "generation": 1,
-        "train_rate": 0.2777777777777778,
-        "heldout_rate": 0.2222222222222222,
-        "heldout_solved": 2,
-        "heldout_total": 9,
+        "train_rate": 0.175,
+        "heldout_rate": 0.15,
+        "heldout_solved": 3,
+        "heldout_total": 20,
         "num_active_skills": 0,
         "recall_at_1": 0.0
       },
       {
         "generation": 2,
-        "train_rate": 0.2777777777777778,
-        "heldout_rate": 0.2222222222222222,
-        "heldout_solved": 2,
-        "heldout_total": 9,
+        "train_rate": 0.175,
+        "heldout_rate": 0.15,
+        "heldout_solved": 3,
+        "heldout_total": 20,
         "num_active_skills": 0,
         "recall_at_1": 0.0
       },
       {
         "generation": 3,
-        "train_rate": 0.2777777777777778,
-        "heldout_rate": 0.2222222222222222,
-        "heldout_solved": 2,
-        "heldout_total": 9,
+        "train_rate": 0.175,
+        "heldout_rate": 0.15,
+        "heldout_solved": 3,
+        "heldout_total": 20,
         "num_active_skills": 0,
         "recall_at_1": 0.0
       },
       {
         "generation": 4,
-        "train_rate": 0.2777777777777778,
-        "heldout_rate": 0.2222222222222222,
-        "heldout_solved": 2,
-        "heldout_total": 9,
+        "train_rate": 0.175,
+        "heldout_rate": 0.15,
+        "heldout_solved": 3,
+        "heldout_total": 20,
         "num_active_skills": 0,
         "recall_at_1": 0.0
       }
@@ -94,37 +94,37 @@
     "prompts_only": [
       {
         "generation": 1,
-        "train_rate": 0.2777777777777778,
-        "heldout_rate": 0.2222222222222222,
-        "heldout_solved": 2,
-        "heldout_total": 9,
+        "train_rate": 0.175,
+        "heldout_rate": 0.15,
+        "heldout_solved": 3,
+        "heldout_total": 20,
         "num_active_skills": 0,
         "recall_at_1": 0.0
       },
       {
         "generation": 2,
         "train_rate": 1.0,
-        "heldout_rate": 0.2222222222222222,
-        "heldout_solved": 2,
-        "heldout_total": 9,
+        "heldout_rate": 0.15,
+        "heldout_solved": 3,
+        "heldout_total": 20,
         "num_active_skills": 0,
         "recall_at_1": 0.0
       },
       {
         "generation": 3,
         "train_rate": 1.0,
-        "heldout_rate": 0.2222222222222222,
-        "heldout_solved": 2,
-        "heldout_total": 9,
+        "heldout_rate": 0.15,
+        "heldout_solved": 3,
+        "heldout_total": 20,
         "num_active_skills": 0,
         "recall_at_1": 0.0
       },
       {
         "generation": 4,
         "train_rate": 1.0,
-        "heldout_rate": 0.2222222222222222,
-        "heldout_solved": 2,
-        "heldout_total": 9,
+        "heldout_rate": 0.15,
+        "heldout_solved": 3,
+        "heldout_total": 20,
         "num_active_skills": 0,
         "recall_at_1": 0.0
       }
@@ -132,40 +132,40 @@
     "both": [
       {
         "generation": 1,
-        "train_rate": 0.2777777777777778,
-        "heldout_rate": 0.2222222222222222,
-        "heldout_solved": 2,
-        "heldout_total": 9,
+        "train_rate": 0.175,
+        "heldout_rate": 0.15,
+        "heldout_solved": 3,
+        "heldout_total": 20,
         "num_active_skills": 0,
         "recall_at_1": 0.0
       },
       {
         "generation": 2,
         "train_rate": 1.0,
-        "heldout_rate": 0.8888888888888888,
-        "heldout_solved": 8,
-        "heldout_total": 9,
-        "num_active_skills": 7,
-        "recall_at_1": 0.8571428571428571
+        "heldout_rate": 0.95,
+        "heldout_solved": 19,
+        "heldout_total": 20,
+        "num_active_skills": 17,
+        "recall_at_1": 0.9411764705882353
       },
       {
         "generation": 3,
         "train_rate": 1.0,
         "heldout_rate": 1.0,
-        "heldout_solved": 9,
-        "heldout_total": 9,
-        "num_active_skills": 7,
-        "recall_at_1": 0.8571428571428571,
+        "heldout_solved": 20,
+        "heldout_total": 20,
+        "num_active_skills": 17,
+        "recall_at_1": 0.9411764705882353,
         "recall_at_2": 1.0
       },
       {
         "generation": 4,
         "train_rate": 1.0,
         "heldout_rate": 1.0,
-        "heldout_solved": 9,
-        "heldout_total": 9,
-        "num_active_skills": 7,
-        "recall_at_1": 0.8571428571428571,
+        "heldout_solved": 20,
+        "heldout_total": 20,
+        "num_active_skills": 17,
+        "recall_at_1": 0.9411764705882353,
         "recall_at_2": 1.0
       }
     ]

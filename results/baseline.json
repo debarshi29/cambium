@@ -1,9 +1,25 @@
 {
   "train": {
-    "solved": 4,
-    "total": 18,
-    "rate": 0.2222222222222222,
+    "solved": 6,
+    "total": 40,
+    "rate": 0.15,
     "per_task": {
+      "anagram_check_1": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "anagram_check_2": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "balanced_brackets_1": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "balanced_brackets_2": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
       "caesar_cipher_1": {
         "solved": false,
         "reason": "agent_could_not_attempt"
@@ -20,11 +36,43 @@
         "solved": false,
         "reason": "agent_could_not_attempt"
       },
+      "csv_row_parse_1": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "csv_row_parse_2": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "dedupe_ordered_1": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "dedupe_ordered_2": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "digit_sum_1": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "digit_sum_2": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
       "fibonacci_1": {
         "solved": false,
         "reason": "agent_could_not_attempt"
       },
       "fibonacci_2": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "flatten_list_1": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "flatten_list_2": {
         "solved": false,
         "reason": "agent_could_not_attempt"
       },
@@ -36,7 +84,35 @@
         "solved": false,
         "reason": "agent_could_not_attempt"
       },
+      "int_to_binary_1": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "int_to_binary_2": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "matrix_transpose_1": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "matrix_transpose_2": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "merge_intervals_1": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "merge_intervals_2": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
       "palindrome_check_1": {
+        "solved": true,
+        "reason": "ok"
+      },
+      "palindrome_check_3": {
         "solved": true,
         "reason": "ok"
       },
@@ -45,6 +121,14 @@
         "reason": "agent_could_not_attempt"
       },
       "primality_2": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "query_string_parse_1": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "query_string_parse_2": {
         "solved": false,
         "reason": "agent_could_not_attempt"
       },
@@ -68,6 +152,10 @@
         "solved": true,
         "reason": "ok"
       },
+      "string_reverse_3": {
+        "solved": true,
+        "reason": "ok"
+      },
       "word_count_1": {
         "solved": true,
         "reason": "ok"
@@ -79,10 +167,18 @@
     }
   },
   "heldout": {
-    "solved": 2,
-    "total": 9,
-    "rate": 0.2222222222222222,
+    "solved": 3,
+    "total": 20,
+    "rate": 0.15,
     "per_task": {
+      "anagram_check_3": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "balanced_brackets_3": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
       "caesar_cipher_3": {
         "solved": false,
         "reason": "agent_could_not_attempt"
@@ -91,11 +187,39 @@
         "solved": false,
         "reason": "agent_could_not_attempt"
       },
+      "csv_row_parse_3": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "dedupe_ordered_3": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "digit_sum_3": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
       "fibonacci_3": {
         "solved": false,
         "reason": "agent_could_not_attempt"
       },
+      "flatten_list_3": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
       "gcd_lcm_3": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "int_to_binary_3": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "matrix_transpose_3": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "merge_intervals_3": {
         "solved": false,
         "reason": "agent_could_not_attempt"
       },
@@ -104,6 +228,10 @@
         "reason": "ok"
       },
       "primality_3": {
+        "solved": false,
+        "reason": "agent_could_not_attempt"
+      },
+      "query_string_parse_3": {
         "solved": false,
         "reason": "agent_could_not_attempt"
       },
@@ -116,6 +244,10 @@
         "reason": "agent_could_not_attempt"
       },
       "string_reverse_2": {
+        "solved": true,
+        "reason": "ok"
+      },
+      "word_count_3": {
         "solved": true,
         "reason": "ok"
       }
