@@ -7,4 +7,5 @@ python-dotenv>=1.0
 # Dev / CI (mirrors the `dev` extra in pyproject.toml)
 pytest>=9.0
 pytest-cov>=6.0
+pytest-xdist>=3.6
 ruff>=0.6

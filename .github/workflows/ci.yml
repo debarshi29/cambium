@@ -37,7 +37,7 @@ jobs:
       - name: Install
         run: uv sync --frozen --group dev
       - name: Test
-        run: uv run pytest -q --cov --cov-report=term
+        run: uv run pytest -q -n auto --cov --cov-report=term
 
   pip-install:
     # The README's documented install path (pip + requirements.txt) must
