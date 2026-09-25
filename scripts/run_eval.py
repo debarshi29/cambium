@@ -15,6 +15,7 @@ from cambium.eval import lineage
 from cambium.eval.hacking_audit import run_audit
 from cambium.eval.harness import EvolutionConfig, run_evolution, score_frozen_snapshot
 from cambium.library.store import save_library
+from cambium.sandbox.cache import enable_default_cache
 from cambium.sandbox.runner import run_in_sandbox
 from cambium.tasks.pack import load_task_pack
 
@@ -49,6 +50,9 @@ def curve_series(result) -> list:
 
 
 def main():
+    # Scripted candidates are deterministic, so memoizing sandbox verdicts is
+    # safe here and cuts the run time several-fold (cambium.sandbox.cache).
+    cache = enable_default_cache()
     pack = load_task_pack()
 
     report = {"pack": {"train": len(pack.train), "heldout": len(pack.heldout)}}
@@ -107,7 +111,7 @@ def main():
                 lineage.log_library_snapshot(r.generation, r.skill_registry, r.prompt_registry)
 
     RESULTS_PATH.parent.mkdir(exist_ok=True)
-    RESULTS_PATH.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    RESULTS_PATH.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(f"\nwritten to {RESULTS_PATH}")
 
     # The final "both evolving" library, full version history included, so
@@ -119,6 +123,8 @@ def main():
         metadata={"run": "both-evolving", "generations": GENERATIONS},
     )
     print(f"library written to {LIBRARY_PATH}")
+    print(f"sandbox cache: {cache.stats.hits} hits / {cache.stats.misses} misses "
+          f"({cache.stats.hit_rate:.0%} hit rate)")
 
 
 if __name__ == "__main__":
