@@ -10,9 +10,13 @@ linked under a common lineage.
 """
 from __future__ import annotations
 
+import os
 from contextlib import contextmanager
 
-import mlflow
+# MLflow 3.x prints an "agent hint" banner on import; it's noise in a CLI.
+os.environ.setdefault("MLFLOW_DISABLE_AGENT_HINT", "1")
+
+import mlflow  # noqa: E402
 
 EXPERIMENT_NAME = "cambium-evolution"
 

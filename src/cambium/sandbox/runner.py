@@ -246,7 +246,18 @@ _default_backend: SandboxBackend | None = None
 def backend_from_env() -> SandboxBackend:
     """CAMBIUM_SANDBOX=subprocess (default) | docker. An unknown value is an
     error, and so is asking for docker when it isn't usable: a sandbox
-    setting must never silently downgrade to a weaker tier."""
+    setting must never silently downgrade to a weaker tier.
+    CAMBIUM_SANDBOX_CACHE=1 wraps the result in a memoizing CachingBackend
+    (see cambium.sandbox.cache for when that is and isn't safe)."""
+    backend = _base_backend_from_env()
+    if os.environ.get("CAMBIUM_SANDBOX_CACHE", "").strip().lower() in ("1", "true", "yes"):
+        from cambium.sandbox.cache import CachingBackend
+
+        backend = CachingBackend(backend)
+    return backend
+
+
+def _base_backend_from_env() -> SandboxBackend:
     choice = os.environ.get("CAMBIUM_SANDBOX", "subprocess").strip().lower()
     if choice == "subprocess":
         return SubprocessBackend()
@@ -291,4 +302,8 @@ def run_in_sandbox(
     limits = limits or DEFAULT_LIMITS
     if timeout is not None:
         limits = replace(limits, timeout=timeout)
-    return (backend or get_default_backend()).run(source, fn_name, cases, limits)
+    # `is None`, not `or`: a backend may define __len__ (CachingBackend does)
+    # and an empty one must not be mistaken for "no backend given".
+    if backend is None:
+        backend = get_default_backend()
+    return backend.run(source, fn_name, cases, limits)

@@ -36,7 +36,7 @@ def main():
         "heldout": score_split(solver, pack.heldout),
     }
     RESULTS_PATH.parent.mkdir(exist_ok=True)
-    RESULTS_PATH.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    RESULTS_PATH.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(f"train:   {report['train']['solved']}/{report['train']['total']} "
           f"({report['train']['rate']:.0%})")
     print(f"heldout: {report['heldout']['solved']}/{report['heldout']['total']} "

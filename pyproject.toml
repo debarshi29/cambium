@@ -31,10 +31,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=9.0", "pytest-cov>=6.0", "ruff>=0.6"]
+dev = ["pytest>=9.0", "pytest-cov>=6.0", "pytest-xdist>=3.6", "ruff>=0.6"]
 
 [dependency-groups]
-dev = ["pytest>=9.0", "pytest-cov>=6.0", "ruff>=0.6"]
+dev = ["pytest>=9.0", "pytest-cov>=6.0", "pytest-xdist>=3.6", "ruff>=0.6"]
 
 [project.urls]
 Repository = "https://github.com/debarshi29/cambium"
