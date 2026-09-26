@@ -31,6 +31,10 @@ class SkillRegistry:
                 out.append(max(live, key=lambda s: s.version))
         return out
 
+    def next_version(self, name: str) -> int:
+        versions = self._by_name.get(name, [])
+        return max((v.version for v in versions), default=0) + 1
+
     def all_versions(self, name: str) -> list[Skill]:
         return list(self._by_name.get(name, []))
 

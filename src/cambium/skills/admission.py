@@ -17,7 +17,7 @@ Held-out tasks never enter an admission decision.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from cambium.sandbox.runner import run_in_sandbox
 from cambium.skills.registry import SkillRegistry
@@ -56,5 +56,11 @@ def admit_skill(candidate: Skill, registry: SkillRegistry, task_pack: TaskPack) 
             f"failed on {reuse_task.id}: {reuse_result.stderr.strip().splitlines()[-1] if reuse_result.stderr else 'no output'}",
         )
 
+    # Skills are immutable once admitted (CLAUDE.md §3.1): if this name has
+    # history -- typically a version curation archived, after which the loop
+    # re-solved the category -- the candidate lands as the next version
+    # rather than colliding with the archived one.
+    if registry.all_versions(candidate.name):
+        candidate = replace(candidate, version=registry.next_version(candidate.name))
     registry.add(candidate)
     return AdmissionResult(True, "admitted", f"reuse verified on {reuse_task.id}")
