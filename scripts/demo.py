@@ -19,6 +19,7 @@ STEPS = [
     ("Sprint 3: recall@k", "run_recall_demo.py"),
     ("Sprint 4: curation", "run_curation_demo.py"),
     ("Sprint 5: full eval harness (three curves + ablation)", "run_eval.py"),
+    ("Curation stress test: 25 generations, curated vs. uncurated", "run_curation_stress.py"),
 ]
 
 

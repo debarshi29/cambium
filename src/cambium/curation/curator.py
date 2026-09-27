@@ -30,6 +30,12 @@ from cambium.retrieval.index import tokenize
 from cambium.skills.registry import SkillRegistry
 
 DEFAULT_DEDUP_SIMILARITY = 0.8
+# Two skills in the *same category* are judged against a looser bar: a
+# re-derived skill whose description drifted by a few words lands around
+# 0.5 Jaccard against the original (measured by cambium.eval.stress), far
+# below the cross-category bar, yet it is exactly the redundancy curation
+# exists to merge. docs/adr/0011.
+DEFAULT_SAME_CATEGORY_DEDUP_SIMILARITY = 0.45
 DEFAULT_UNUSED_FOR_N_GENERATIONS = 5
 DEFAULT_MIN_SUCCESS_RATE = 0.5
 DEFAULT_MAX_ACTIVE_SKILLS = 20
@@ -51,13 +57,33 @@ def _jaccard(a: set, b: set) -> float:
     return len(a & b) / len(a | b)
 
 
-def dedup_skills(registry: SkillRegistry, threshold: float = DEFAULT_DEDUP_SIMILARITY) -> list:
+def _category(skill) -> str | None:
+    return skill.provenance.get("category")
+
+
+def _sole_covers(registry: SkillRegistry) -> set:
+    """Names of active skills that are the only active skill for their
+    category -- removing one removes a capability, not a redundancy."""
+    by_category: dict = {}
+    for skill in registry.active():
+        cat = _category(skill)
+        if cat is not None:
+            by_category.setdefault(cat, []).append(skill.name)
+    return {names[0] for names in by_category.values() if len(names) == 1}
+
+
+def dedup_skills(
+    registry: SkillRegistry,
+    threshold: float = DEFAULT_DEDUP_SIMILARITY,
+    same_category_threshold: float = DEFAULT_SAME_CATEGORY_DEDUP_SIMILARITY,
+) -> list:
     """Merge active skills whose retrieval text is near-identical (Jaccard
     similarity over tokens >= threshold) but which weren't caught by the
     admission gate's exact-signature dedup check (CLAUDE.md §3.2 condition
     3) because they have different (category, fn_name) signatures — e.g.
     two skills for genuinely overlapping jobs, admitted from different
-    tasks before anyone noticed the overlap. Keeps the higher-success-rate
+    tasks before anyone noticed the overlap. Pairs in the same category use
+    the looser `same_category_threshold`. Keeps the higher-success-rate
     skill (ties broken by more invocations, then lexical name order),
     deprecates the other."""
     merged = []
@@ -71,7 +97,8 @@ def dedup_skills(registry: SkillRegistry, threshold: float = DEFAULT_DEDUP_SIMIL
             if b.name in dropped_names:
                 continue
             tokens_b = tokenize(b.retrieval_text())
-            if _jaccard(tokens_a, tokens_b) >= threshold:
+            same = _category(a) is not None and _category(a) == _category(b)
+            if _jaccard(tokens_a, tokens_b) >= (same_category_threshold if same else threshold):
                 keep, drop = _rank_pair(a, b)
                 registry.deprecate(drop.name, drop.version, reason="near-duplicate")
                 dropped_names.add(drop.name)
@@ -94,9 +121,16 @@ def decay_deprecate_skills(
     """Deprecate active skills that are both stale (not used in the last N
     generations, or never used at all if the library itself is older than
     N generations) and weak (success rate below threshold — a skill with no
-    invocations at all counts as failing this, not passing by default)."""
+    invocations at all counts as failing this, not passing by default).
+
+    Never decays the last active skill of a category: a low success rate
+    there usually means retrieval keeps handing the skill the *wrong*
+    tasks, which is a retrieval problem, not evidence the capability is
+    worthless (docs/adr/0011)."""
     deprecated = []
     for skill in registry.active():
+        if skill.name in _sole_covers(registry):
+            continue
         last_used = skill.stats.last_used_generation
         stale = (last_used is None and current_generation > unused_for_n_generations) or (
             last_used is not None and (current_generation - last_used) > unused_for_n_generations
@@ -109,20 +143,24 @@ def decay_deprecate_skills(
 
 
 def cap_skill_library(registry: SkillRegistry, max_active: int = DEFAULT_MAX_ACTIVE_SKILLS) -> list:
-    """Hard cap on active library size. Deprecates the lowest-value skills
-    (worst success rate, then fewest invocations, then most stale) until at
-    or under the cap. Soft deprecation only — see module docstring."""
-    active = registry.active()
-    if len(active) <= max_active:
-        return []
-    ranked = sorted(
-        active,
-        key=lambda s: (s.stats.success_rate, s.stats.invocations, s.stats.last_used_generation or -1),
-    )
-    to_drop = ranked[: len(active) - max_active]
-    for skill in to_drop:
-        registry.deprecate(skill.name, skill.version, reason="size cap")
-    return [s.name for s in to_drop]
+    """Hard cap on active library size. Coverage-aware: redundant skills
+    (their category has another active skill) go first, lowest value first
+    (worst success rate, then fewest invocations, then most stale); a
+    category's last skill is only dropped if the cap still can't be met
+    otherwise -- the cap stays hard. Soft deprecation only — see module
+    docstring."""
+    def value(s):
+        return (s.stats.success_rate, s.stats.invocations, s.stats.last_used_generation or -1)
+
+    dropped = []
+    while len(registry) > max_active:
+        sole = _sole_covers(registry)
+        active = registry.active()
+        redundant = [s for s in active if s.name not in sole]
+        victim = min(redundant or active, key=value)
+        registry.deprecate(victim.name, victim.version, reason="size cap")
+        dropped.append(victim.name)
+    return dropped
 
 
 def archive_superseded_prompts(prompt_registry: PromptRegistry) -> list:
@@ -171,12 +209,13 @@ def run_curation(
     prompt_registry: PromptRegistry,
     generation: int,
     dedup_similarity: float = DEFAULT_DEDUP_SIMILARITY,
+    same_category_dedup_similarity: float = DEFAULT_SAME_CATEGORY_DEDUP_SIMILARITY,
     unused_for_n_generations: int = DEFAULT_UNUSED_FOR_N_GENERATIONS,
     min_success_rate: float = DEFAULT_MIN_SUCCESS_RATE,
     max_active_skills: int = DEFAULT_MAX_ACTIVE_SKILLS,
 ) -> CurationReport:
     report = CurationReport(generation=generation)
-    report.skills_deduped = dedup_skills(skill_registry, dedup_similarity)
+    report.skills_deduped = dedup_skills(skill_registry, dedup_similarity, same_category_dedup_similarity)
     report.skills_decayed = decay_deprecate_skills(
         skill_registry, generation, unused_for_n_generations, min_success_rate
     )

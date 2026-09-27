@@ -123,6 +123,28 @@ category's second task instead. Full findings live in
 eval run — reporting this is a feature of the project, not a suppressed
 embarrassment.
 
+### Curation under growth pressure
+
+The main run saturates at generation 3, so curation never sees pressure
+there. [`cambium.eval.stress`](src/cambium/eval/stress.py) adds it: 25 more
+generations in which a seeded noisy proposer pushes 4 correct-but-redundant
+variants per generation (same code, new name, drifted docstring) through
+the real admission gate — 100 admissions in all.
+
+| after 25 generations | curated | uncurated |
+|---|---:|---:|
+| active skills | **20** (never above 24) | 117 |
+| total versions (archived, not deleted) | 117 | 117 |
+| held-out solved after each curation pass | 20/20 | 20/20 |
+| recall@2 | **100%** | 71% |
+
+The first run of this test found two real flaws in Sprint 4's curation —
+dedup never fired (paraphrases score ~0.5 Jaccard vs. a 0.8 threshold) and
+the size cap deleted a category's *only* skill because retrieval mistakes
+had dragged its success rate down, costing 2 held-out tasks. Curation is
+now coverage-aware with a same-category dedup threshold; the full story is
+in [ADR 0011](docs/adr/0011-curation-stress-test.md).
+
 ---
 
 ## Quickstart
@@ -162,6 +184,7 @@ curation demo, and the full eval harness in sequence. Individually:
 | `scripts/run_recall_demo.py` | recall@1 catching a real retrieval collision, decaying further with decoys, recovering at higher k |
 | `scripts/run_curation_demo.py` | all four curation passes: dedup, decay, size cap, prompt version archiving |
 | `scripts/run_eval.py` | the full eval harness: all three curves, the attribution ablation, the hacking audit, MLflow lineage |
+| `scripts/run_curation_stress.py` | 25 generations of noisy near-duplicate proposals, curated vs. uncurated |
 
 `scripts/run_eval.py` logs full generation lineage to
 `sqlite:///mlruns.db`; browse it with:
@@ -255,6 +278,7 @@ if either drifts from `src/cambium/`, the code wins.
 | [0008](docs/adr/0008-sandbox-hardening.md) | Sandbox hardening: unforgeable results, audit hook, resource limits |
 | [0009](docs/adr/0009-container-sandbox.md) | Container (Docker) sandbox tier behind a pluggable backend |
 | [0010](docs/adr/0010-full-task-pack.md) | Task pack grown to spec size: 60 tasks, 40 train / 20 held-out |
+| [0011](docs/adr/0011-curation-stress-test.md) | Curation stress test, and the two curation flaws it found |
 
 ---
 

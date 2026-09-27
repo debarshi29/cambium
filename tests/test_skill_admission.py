@@ -63,3 +63,29 @@ def test_duplicate_skill_rejected():
     second = admit_skill(candidate2, registry, pack)
     assert not second.admitted
     assert second.reason == "duplicate"
+
+
+def test_readmission_after_deprecation_becomes_the_next_version():
+    """Regression: found by the curation stress test. Curation archives
+    caesar_cipher_skill@v1, the loop re-solves the category and proposes a
+    fresh caesar_cipher_skill (built as v1) -- which used to crash the
+    registry with a version collision."""
+    from cambium.agent.generation import candidates_for
+    from cambium.agent.loop import build_skill_candidate
+    from cambium.skills.admission import admit_skill
+    from cambium.skills.registry import SkillRegistry
+    from cambium.tasks.pack import load_task_pack
+
+    pack = load_task_pack()
+    origin = pack.by_id("caesar_cipher_1")
+    source = candidates_for("caesar_cipher")[1].source
+    registry = SkillRegistry()
+    assert admit_skill(build_skill_candidate(origin, source, 1), registry, pack).admitted
+    registry.deprecate("caesar_cipher_skill", 1, reason="size cap")
+
+    result = admit_skill(build_skill_candidate(origin, source, 7), registry, pack)
+
+    assert result.admitted
+    versions = registry.all_versions("caesar_cipher_skill")
+    assert [(v.version, v.deprecated) for v in versions] == [(1, True), (2, False)]
+    assert registry.get_active("caesar_cipher_skill").provenance["generation"] == 7

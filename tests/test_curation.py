@@ -69,8 +69,11 @@ def test_decay_deprecates_stale_and_weak_skills_only():
 def test_never_used_skill_decays_once_library_outlives_the_window():
     registry = SkillRegistry()
     registry.add(make_skill("never_used", "docstring"))  # invocations=0, last_used=None
+    registry.add(make_skill("sibling", "other text entirely", fn_name="fn2"))  # same category
     deprecated = decay_deprecate_skills(registry, current_generation=6, unused_for_n_generations=5)
+    # both are stale and weak; the second is then the category's last skill
     assert deprecated == ["never_used"]
+    assert registry.get_active("sibling") is not None
 
 
 def test_cap_skill_library_deprecates_lowest_value_until_under_cap():
@@ -92,6 +95,7 @@ def test_cap_skill_library_noop_when_under_cap():
 def test_deprecation_is_soft_version_history_preserved():
     registry = SkillRegistry()
     registry.add(make_skill("s", "docstring", invocations=0))
+    registry.add(make_skill("keeper", "something else", invocations=3, successes=3, last_used=99))
     decay_deprecate_skills(registry, current_generation=100)
     assert registry.get_active("s") is None
     assert len(registry.all_versions("s")) == 1  # archived, not deleted
@@ -136,6 +140,7 @@ def test_dedup_prompts_merges_same_params_keeps_better_win_rate():
 def test_run_curation_combines_all_passes():
     skills = SkillRegistry()
     skills.add(make_skill("stale_weak", "unique docstring alpha", invocations=2, successes=0, last_used=1))
+    skills.add(make_skill("healthy", "unrelated words beta", invocations=3, successes=3, last_used=9))
     prompts = seed_default_registry()
     v2 = Prompt(
         name="reflector-v2", node="reflector", template="max_attempts=2",
@@ -147,3 +152,52 @@ def test_run_curation_combines_all_passes():
 
     assert "stale_weak" in report.skills_decayed
     assert ("reflector", 1) in report.prompts_archived_superseded
+
+
+# --- coverage-aware curation (docs/adr/0011) ---------------------------------
+
+def test_decay_never_removes_a_categorys_last_skill():
+    """Found by cambium.eval.stress: a sole skill whose success rate is low
+    because retrieval keeps handing it other categories' tasks."""
+    registry = SkillRegistry()
+    registry.add(make_skill("only_caesar", "caesar shift", category="caesar",
+                            invocations=10, successes=2, last_used=1))
+    assert decay_deprecate_skills(registry, current_generation=50) == []
+    assert registry.get_active("only_caesar") is not None
+
+
+def test_cap_drops_redundant_skills_before_sole_covers():
+    registry = SkillRegistry()
+    # sole cover with the worst stats of all
+    registry.add(make_skill("lonely", "alpha", category="a", invocations=10, successes=1))
+    # two redundant skills in category b with good stats
+    registry.add(make_skill("b1", "beta one", category="b", fn_name="f1", invocations=10, successes=9))
+    registry.add(make_skill("b2", "beta two", category="b", fn_name="f2", invocations=10, successes=8))
+
+    dropped = cap_skill_library(registry, max_active=2)
+
+    assert dropped == ["b2"]
+    assert registry.get_active("lonely") is not None
+
+
+def test_cap_stays_hard_even_if_it_must_drop_a_sole_cover():
+    registry = SkillRegistry()
+    for i in range(3):
+        registry.add(make_skill(f"s{i}", f"doc {i}", category=f"c{i}", invocations=4, successes=i))
+    assert cap_skill_library(registry, max_active=2) == ["s0"]
+    assert len(registry) == 2
+
+
+def test_same_category_paraphrase_is_merged_cross_category_is_not():
+    base = "Compute the nth Fibonacci number iteratively, 0-indexed."
+    registry = SkillRegistry()
+    registry.add(make_skill("fib_skill", base, category="fibonacci", invocations=5, successes=5))
+    registry.add(make_skill("fib_variant", base + " integer string list", category="fibonacci",
+                            fn_name="fib_v2", invocations=1, successes=1))
+    registry.add(make_skill("other", base + " integer string list", category="primality",
+                            fn_name="is_prime"))
+
+    merged = dedup_skills(registry)
+
+    assert merged == [("fib_skill", "fib_variant")]
+    assert registry.get_active("other") is not None
