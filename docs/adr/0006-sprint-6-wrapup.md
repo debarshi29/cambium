@@ -75,11 +75,13 @@ left for someone to discover the gap.
    (determinism, cost, reproducibility; ADR 0007's rationale). Running the
    harness itself through the live path, seeded and repeated, as an
    explicitly separate fourth curve is the next real step here.
-2. Task pack to spec size (60 tasks) — mechanical, not architectural.
-3. A curation stress scenario: either the larger pack or a synthetic noisy
+2. ~~Task pack to spec size (60 tasks)~~ -- **done**, `docs/adr/0010`.
+3. ~~A curation stress scenario~~ -- **done**, see
+   `docs/adr/0011-curation-stress-test.md` (and the two curation flaws it
+   found). Original note: a curation stress scenario: either the larger pack or a synthetic noisy
    generator, run for 20+ generations, to actually test the "library stays
    bounded" claim rather than assume the unit tests cover it.
-4. Container sandboxing tier (ADR 0004).
+4. ~~Container sandboxing tier (ADR 0004)~~ -- **done**, `docs/adr/0009`.
 5. The stretch ablation from CLAUDE.md §4 (re-run losing `loop-engineering`
    variants with the library attached) — blocked on `loop-engineering`
    artifacts being available in this environment, not on anything in this
