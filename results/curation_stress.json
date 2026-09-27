@@ -1,0 +1,768 @@
+{
+  "config": {
+    "generations": 25,
+    "variants_per_generation": 4,
+    "curation": true,
+    "curation_every": 2,
+    "max_active_skills": 24,
+    "dedup_similarity": 0.8,
+    "unused_for_n_generations": 5,
+    "min_success_rate": 0.5,
+    "drift_words": 3,
+    "seed": 0
+  },
+  "curated": [
+    {
+      "generation": 4,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 17,
+      "total_versions": 21,
+      "deprecated_by_reason": {
+        "near-duplicate": 4,
+        "usage decay": 0,
+        "size cap": 0
+      },
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.9411764705882353,
+      "recall_at_k": 1.0,
+      "k": 2
+    },
+    {
+      "generation": 5,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 21,
+      "total_versions": 25,
+      "deprecated_by_reason": {
+        "near-duplicate": 4,
+        "usage decay": 0,
+        "size cap": 0
+      },
+      "heldout_solved": 19,
+      "heldout_total": 20,
+      "recall_at_1": 0.9411764705882353,
+      "recall_at_k": 0.9411764705882353,
+      "k": 2
+    },
+    {
+      "generation": 6,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 17,
+      "total_versions": 29,
+      "deprecated_by_reason": {
+        "near-duplicate": 12,
+        "usage decay": 0,
+        "size cap": 0
+      },
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.9375,
+      "recall_at_k": 1.0,
+      "k": 2
+    },
+    {
+      "generation": 7,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 21,
+      "total_versions": 33,
+      "deprecated_by_reason": {
+        "near-duplicate": 12,
+        "usage decay": 0,
+        "size cap": 0
+      },
+      "heldout_solved": 19,
+      "heldout_total": 20,
+      "recall_at_1": 0.875,
+      "recall_at_k": 0.9375,
+      "k": 2
+    },
+    {
+      "generation": 8,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 17,
+      "total_versions": 37,
+      "deprecated_by_reason": {
+        "near-duplicate": 20,
+        "usage decay": 0,
+        "size cap": 0
+      },
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.9375,
+      "recall_at_k": 1.0,
+      "k": 2
+    },
+    {
+      "generation": 9,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 21,
+      "total_versions": 41,
+      "deprecated_by_reason": {
+        "near-duplicate": 20,
+        "usage decay": 0,
+        "size cap": 0
+      },
+      "heldout_solved": 19,
+      "heldout_total": 20,
+      "recall_at_1": 0.9375,
+      "recall_at_k": 0.9375,
+      "k": 2
+    },
+    {
+      "generation": 10,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 17,
+      "total_versions": 45,
+      "deprecated_by_reason": {
+        "near-duplicate": 28,
+        "usage decay": 0,
+        "size cap": 0
+      },
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.9333333333333333,
+      "recall_at_k": 1.0,
+      "k": 2
+    },
+    {
+      "generation": 11,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 21,
+      "total_versions": 49,
+      "deprecated_by_reason": {
+        "near-duplicate": 28,
+        "usage decay": 0,
+        "size cap": 0
+      },
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.9333333333333333,
+      "recall_at_k": 1.0,
+      "k": 2
+    },
+    {
+      "generation": 12,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 18,
+      "total_versions": 53,
+      "deprecated_by_reason": {
+        "near-duplicate": 35,
+        "usage decay": 0,
+        "size cap": 0
+      },
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.8666666666666667,
+      "recall_at_k": 1.0,
+      "k": 2
+    },
+    {
+      "generation": 13,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 22,
+      "total_versions": 57,
+      "deprecated_by_reason": {
+        "near-duplicate": 35,
+        "usage decay": 0,
+        "size cap": 0
+      },
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.8666666666666667,
+      "recall_at_k": 1.0,
+      "k": 2
+    },
+    {
+      "generation": 14,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 18,
+      "total_versions": 61,
+      "deprecated_by_reason": {
+        "near-duplicate": 42,
+        "usage decay": 1,
+        "size cap": 0
+      },
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.8666666666666667,
+      "recall_at_k": 1.0,
+      "k": 2
+    },
+    {
+      "generation": 15,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 22,
+      "total_versions": 65,
+      "deprecated_by_reason": {
+        "near-duplicate": 42,
+        "usage decay": 1,
+        "size cap": 0
+      },
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.8,
+      "recall_at_k": 1.0,
+      "k": 2
+    },
+    {
+      "generation": 16,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 18,
+      "total_versions": 69,
+      "deprecated_by_reason": {
+        "near-duplicate": 50,
+        "usage decay": 1,
+        "size cap": 0
+      },
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.8571428571428571,
+      "recall_at_k": 1.0,
+      "k": 2
+    },
+    {
+      "generation": 17,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 22,
+      "total_versions": 73,
+      "deprecated_by_reason": {
+        "near-duplicate": 50,
+        "usage decay": 1,
+        "size cap": 0
+      },
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.8571428571428571,
+      "recall_at_k": 1.0,
+      "k": 2
+    },
+    {
+      "generation": 18,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 19,
+      "total_versions": 77,
+      "deprecated_by_reason": {
+        "near-duplicate": 56,
+        "usage decay": 2,
+        "size cap": 0
+      },
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.8571428571428571,
+      "recall_at_k": 1.0,
+      "k": 2
+    },
+    {
+      "generation": 19,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 23,
+      "total_versions": 81,
+      "deprecated_by_reason": {
+        "near-duplicate": 56,
+        "usage decay": 2,
+        "size cap": 0
+      },
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.8571428571428571,
+      "recall_at_k": 0.9285714285714286,
+      "k": 2
+    },
+    {
+      "generation": 20,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 19,
+      "total_versions": 85,
+      "deprecated_by_reason": {
+        "near-duplicate": 64,
+        "usage decay": 2,
+        "size cap": 0
+      },
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.8571428571428571,
+      "recall_at_k": 1.0,
+      "k": 2
+    },
+    {
+      "generation": 21,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 23,
+      "total_versions": 89,
+      "deprecated_by_reason": {
+        "near-duplicate": 64,
+        "usage decay": 2,
+        "size cap": 0
+      },
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.8571428571428571,
+      "recall_at_k": 1.0,
+      "k": 2
+    },
+    {
+      "generation": 22,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 19,
+      "total_versions": 93,
+      "deprecated_by_reason": {
+        "near-duplicate": 72,
+        "usage decay": 2,
+        "size cap": 0
+      },
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.8571428571428571,
+      "recall_at_k": 1.0,
+      "k": 2
+    },
+    {
+      "generation": 23,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 23,
+      "total_versions": 97,
+      "deprecated_by_reason": {
+        "near-duplicate": 72,
+        "usage decay": 2,
+        "size cap": 0
+      },
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.7142857142857143,
+      "recall_at_k": 1.0,
+      "k": 2
+    },
+    {
+      "generation": 24,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 19,
+      "total_versions": 101,
+      "deprecated_by_reason": {
+        "near-duplicate": 80,
+        "usage decay": 2,
+        "size cap": 0
+      },
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.8461538461538461,
+      "recall_at_k": 1.0,
+      "k": 2
+    },
+    {
+      "generation": 25,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 23,
+      "total_versions": 105,
+      "deprecated_by_reason": {
+        "near-duplicate": 80,
+        "usage decay": 2,
+        "size cap": 0
+      },
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.8461538461538461,
+      "recall_at_k": 1.0,
+      "k": 2
+    },
+    {
+      "generation": 26,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 20,
+      "total_versions": 109,
+      "deprecated_by_reason": {
+        "near-duplicate": 87,
+        "usage decay": 2,
+        "size cap": 0
+      },
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.7692307692307693,
+      "recall_at_k": 1.0,
+      "k": 2
+    },
+    {
+      "generation": 27,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 24,
+      "total_versions": 113,
+      "deprecated_by_reason": {
+        "near-duplicate": 87,
+        "usage decay": 2,
+        "size cap": 0
+      },
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.7692307692307693,
+      "recall_at_k": 1.0,
+      "k": 2
+    },
+    {
+      "generation": 28,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 20,
+      "total_versions": 117,
+      "deprecated_by_reason": {
+        "near-duplicate": 95,
+        "usage decay": 2,
+        "size cap": 0
+      },
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.7692307692307693,
+      "recall_at_k": 1.0,
+      "k": 2
+    }
+  ],
+  "uncurated": [
+    {
+      "generation": 4,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 21,
+      "total_versions": 21,
+      "deprecated_by_reason": {},
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.9411764705882353,
+      "recall_at_k": 1.0,
+      "k": 2
+    },
+    {
+      "generation": 5,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 25,
+      "total_versions": 25,
+      "deprecated_by_reason": {},
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.9411764705882353,
+      "recall_at_k": 0.9411764705882353,
+      "k": 2
+    },
+    {
+      "generation": 6,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 29,
+      "total_versions": 29,
+      "deprecated_by_reason": {},
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.8823529411764706,
+      "recall_at_k": 0.8823529411764706,
+      "k": 2
+    },
+    {
+      "generation": 7,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 33,
+      "total_versions": 33,
+      "deprecated_by_reason": {},
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.8235294117647058,
+      "recall_at_k": 0.8823529411764706,
+      "k": 2
+    },
+    {
+      "generation": 8,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 37,
+      "total_versions": 37,
+      "deprecated_by_reason": {},
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.8235294117647058,
+      "recall_at_k": 0.8823529411764706,
+      "k": 2
+    },
+    {
+      "generation": 9,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 41,
+      "total_versions": 41,
+      "deprecated_by_reason": {},
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.8235294117647058,
+      "recall_at_k": 0.8823529411764706,
+      "k": 2
+    },
+    {
+      "generation": 10,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 45,
+      "total_versions": 45,
+      "deprecated_by_reason": {},
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.7647058823529411,
+      "recall_at_k": 0.8823529411764706,
+      "k": 2
+    },
+    {
+      "generation": 11,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 49,
+      "total_versions": 49,
+      "deprecated_by_reason": {},
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.7647058823529411,
+      "recall_at_k": 0.8823529411764706,
+      "k": 2
+    },
+    {
+      "generation": 12,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 53,
+      "total_versions": 53,
+      "deprecated_by_reason": {},
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.7647058823529411,
+      "recall_at_k": 0.7647058823529411,
+      "k": 2
+    },
+    {
+      "generation": 13,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 57,
+      "total_versions": 57,
+      "deprecated_by_reason": {},
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.7058823529411765,
+      "recall_at_k": 0.7647058823529411,
+      "k": 2
+    },
+    {
+      "generation": 14,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 61,
+      "total_versions": 61,
+      "deprecated_by_reason": {},
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.7058823529411765,
+      "recall_at_k": 0.7647058823529411,
+      "k": 2
+    },
+    {
+      "generation": 15,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 65,
+      "total_versions": 65,
+      "deprecated_by_reason": {},
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.7058823529411765,
+      "recall_at_k": 0.7647058823529411,
+      "k": 2
+    },
+    {
+      "generation": 16,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 69,
+      "total_versions": 69,
+      "deprecated_by_reason": {},
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.7058823529411765,
+      "recall_at_k": 0.7647058823529411,
+      "k": 2
+    },
+    {
+      "generation": 17,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 73,
+      "total_versions": 73,
+      "deprecated_by_reason": {},
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.7058823529411765,
+      "recall_at_k": 0.7647058823529411,
+      "k": 2
+    },
+    {
+      "generation": 18,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 77,
+      "total_versions": 77,
+      "deprecated_by_reason": {},
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.7058823529411765,
+      "recall_at_k": 0.7647058823529411,
+      "k": 2
+    },
+    {
+      "generation": 19,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 81,
+      "total_versions": 81,
+      "deprecated_by_reason": {},
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.7058823529411765,
+      "recall_at_k": 0.7647058823529411,
+      "k": 2
+    },
+    {
+      "generation": 20,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 85,
+      "total_versions": 85,
+      "deprecated_by_reason": {},
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.6470588235294118,
+      "recall_at_k": 0.7058823529411765,
+      "k": 2
+    },
+    {
+      "generation": 21,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 89,
+      "total_versions": 89,
+      "deprecated_by_reason": {},
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.6470588235294118,
+      "recall_at_k": 0.7058823529411765,
+      "k": 2
+    },
+    {
+      "generation": 22,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 93,
+      "total_versions": 93,
+      "deprecated_by_reason": {},
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.6470588235294118,
+      "recall_at_k": 0.7058823529411765,
+      "k": 2
+    },
+    {
+      "generation": 23,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 97,
+      "total_versions": 97,
+      "deprecated_by_reason": {},
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.6470588235294118,
+      "recall_at_k": 0.7058823529411765,
+      "k": 2
+    },
+    {
+      "generation": 24,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 101,
+      "total_versions": 101,
+      "deprecated_by_reason": {},
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.6470588235294118,
+      "recall_at_k": 0.7058823529411765,
+      "k": 2
+    },
+    {
+      "generation": 25,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 105,
+      "total_versions": 105,
+      "deprecated_by_reason": {},
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.6470588235294118,
+      "recall_at_k": 0.7058823529411765,
+      "k": 2
+    },
+    {
+      "generation": 26,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 109,
+      "total_versions": 109,
+      "deprecated_by_reason": {},
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.6470588235294118,
+      "recall_at_k": 0.7058823529411765,
+      "k": 2
+    },
+    {
+      "generation": 27,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 113,
+      "total_versions": 113,
+      "deprecated_by_reason": {},
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.6470588235294118,
+      "recall_at_k": 0.7058823529411765,
+      "k": 2
+    },
+    {
+      "generation": 28,
+      "proposed": 4,
+      "admitted": 4,
+      "active_skills": 117,
+      "total_versions": 117,
+      "deprecated_by_reason": {},
+      "heldout_solved": 20,
+      "heldout_total": 20,
+      "recall_at_1": 0.6470588235294118,
+      "recall_at_k": 0.7058823529411765,
+      "k": 2
+    }
+  ]
+}
