@@ -50,8 +50,11 @@ jobs:
           python-version: "3.13"
       - name: Install
         run: pip install -r requirements.txt && pip install --no-deps -e .
-      - name: Import smoke test
-        run: python -c "import cambium; print(cambium.__version__)"
+      - name: CLI smoke test
+        run: |
+          cambium --version
+          cambium tasks --split heldout
+          cambium baseline --out /tmp/cambium-results
 
   sandbox-docker:
     # The container tier (ADR 0009). Runs the backend tests plus the full

@@ -168,6 +168,26 @@ instead, install it as a package:
 pip install -e ".[dev]"
 ```
 
+### The `cambium` CLI
+
+Installing the package (`pip install -e ".[dev]"` or `uv sync`) puts a
+`cambium` command on your PATH (`python -m cambium` works too):
+
+```bash
+cambium eval                      # three curves + ablation + hacking audit + MLflow lineage
+cambium baseline                  # curve 1 only
+cambium stress                    # 25-generation curation stress test
+cambium tasks --split heldout     # list the pack
+cambium library show results/library_both_evolving.json
+cambium library diff old.json new.json --exit-code
+cambium llm-demo                  # live model, needs GROQ_API_KEY
+```
+
+Global options: `--sandbox subprocess|docker`, `--[no-]sandbox-cache`,
+`--tasks DIR`, `--out DIR`, `--log-level INFO` (admission and curation
+decisions are logged at INFO). `cambium eval` reproduces
+`results/eval_report.json` byte for byte.
+
 ### Run everything
 
 ```bash
