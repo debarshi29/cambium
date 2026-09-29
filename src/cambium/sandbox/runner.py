@@ -243,13 +243,14 @@ class SubprocessBackend:
 _default_backend: SandboxBackend | None = None
 
 
-def backend_from_env() -> SandboxBackend:
+def backend_from_env(choice: str | None = None) -> SandboxBackend:
     """CAMBIUM_SANDBOX=subprocess (default) | docker. An unknown value is an
     error, and so is asking for docker when it isn't usable: a sandbox
     setting must never silently downgrade to a weaker tier.
     CAMBIUM_SANDBOX_CACHE=1 wraps the result in a memoizing CachingBackend
-    (see cambium.sandbox.cache for when that is and isn't safe)."""
-    backend = _base_backend_from_env()
+    (see cambium.sandbox.cache for when that is and isn't safe). An
+    explicit `choice` overrides CAMBIUM_SANDBOX without touching os.environ."""
+    backend = _base_backend_from_env(choice)
     if os.environ.get("CAMBIUM_SANDBOX_CACHE", "").strip().lower() in ("1", "true", "yes"):
         from cambium.sandbox.cache import CachingBackend
 
@@ -257,8 +258,8 @@ def backend_from_env() -> SandboxBackend:
     return backend
 
 
-def _base_backend_from_env() -> SandboxBackend:
-    choice = os.environ.get("CAMBIUM_SANDBOX", "subprocess").strip().lower()
+def _base_backend_from_env(choice: str | None = None) -> SandboxBackend:
+    choice = (choice or os.environ.get("CAMBIUM_SANDBOX", "subprocess")).strip().lower()
     if choice == "subprocess":
         return SubprocessBackend()
     if choice == "docker":

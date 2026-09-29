@@ -21,18 +21,23 @@ import mlflow  # noqa: E402
 EXPERIMENT_NAME = "cambium-evolution"
 
 
-def configure():
+DEFAULT_TRACKING_URI = "sqlite:///mlruns.db"
+
+
+def configure(tracking_uri: str | None = None):
     # mlflow-skinny's filesystem backend ("file:./mlruns") is in maintenance
     # mode as of mlflow 3.x and raises unless opted back into explicitly;
     # sqlite is what MLflow itself recommends instead. Local file, still no
-    # tracking server required.
-    mlflow.set_tracking_uri("sqlite:///mlruns.db")
+    # tracking server required. MLFLOW_TRACKING_URI overrides the default
+    # (e.g. a shared tracking server).
+    uri = tracking_uri or os.environ.get("MLFLOW_TRACKING_URI") or DEFAULT_TRACKING_URI
+    mlflow.set_tracking_uri(uri)
     mlflow.set_experiment(EXPERIMENT_NAME)
 
 
 @contextmanager
-def evolution_run(run_name: str, params: dict):
-    configure()
+def evolution_run(run_name: str, params: dict, tracking_uri: str | None = None):
+    configure(tracking_uri)
     with mlflow.start_run(run_name=run_name) as parent:
         mlflow.log_params({k: str(v) for k, v in params.items()})
         yield parent

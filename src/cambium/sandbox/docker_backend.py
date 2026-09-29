@@ -67,6 +67,12 @@ class DockerBackend:
 
     def check_available(self) -> None:
         """Fail loudly up front instead of failing every candidate later."""
+        try:
+            self._check_available()
+        except subprocess.TimeoutExpired as exc:
+            raise SandboxBackendError(f"docker did not respond: {' '.join(exc.cmd)} timed out") from exc
+
+    def _check_available(self) -> None:
         if shutil.which(self.docker) is None:
             raise SandboxBackendError(f"docker CLI {self.docker!r} not found on PATH")
         info = subprocess.run(

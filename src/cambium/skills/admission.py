@@ -17,12 +17,15 @@ Held-out tasks never enter an admission decision.
 """
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, replace
 
 from cambium.sandbox.runner import run_in_sandbox
 from cambium.skills.registry import SkillRegistry
 from cambium.skills.schema import Skill
 from cambium.tasks.pack import TaskPack
+
+log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -33,6 +36,17 @@ class AdmissionResult:
 
 
 def admit_skill(candidate: Skill, registry: SkillRegistry, task_pack: TaskPack) -> AdmissionResult:
+    result = _admit_skill(candidate, registry, task_pack)
+    origin = candidate.provenance.get("task_id")
+    if result.admitted:
+        log.info("skill admitted: %s from %s (%s)", candidate.name, origin, result.detail)
+    else:
+        log.info("skill rejected: %s from %s: %s", candidate.name, origin, result.reason)
+        log.debug("rejection detail for %s: %s", candidate.name, result.detail)
+    return result
+
+
+def _admit_skill(candidate: Skill, registry: SkillRegistry, task_pack: TaskPack) -> AdmissionResult:
     # Conditions 1 + 2: sandbox exec, no error, synthesized tests pass.
     origin_result = run_in_sandbox(candidate.source, candidate.fn_name, list(candidate.tests))
     if not origin_result.ok:

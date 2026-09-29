@@ -36,6 +36,9 @@ dev = ["pytest>=9.0", "pytest-cov>=6.0", "pytest-xdist>=3.6", "ruff>=0.6"]
 [dependency-groups]
 dev = ["pytest>=9.0", "pytest-cov>=6.0", "pytest-xdist>=3.6", "ruff>=0.6"]
 
+[project.scripts]
+cambium = "cambium.cli:main"
+
 [project.urls]
 Repository = "https://github.com/debarshi29/cambium"
 Issues = "https://github.com/debarshi29/cambium/issues"

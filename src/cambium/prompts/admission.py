@@ -19,6 +19,7 @@ reflector/critic candidates go through the full loop.
 """
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 
 from cambium.agent.loop import run_task
@@ -27,6 +28,8 @@ from cambium.prompts.registry import PromptRegistry
 from cambium.prompts.schema import Prompt
 from cambium.skills.registry import SkillRegistry
 from cambium.tasks.pack import TaskPack
+
+log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -74,7 +77,18 @@ def _evaluate(
     return out
 
 
-def admit_prompt(
+def admit_prompt(candidate: Prompt, parent: Prompt, *args, **kwargs) -> PromptAdmissionResult:
+    result = _admit_prompt(candidate, parent, *args, **kwargs)
+    log.info(
+        "prompt %s: %s vs parent %s (%.0f%% vs %.0f%%, +%d/-%d tasks)",
+        "admitted" if result.admitted else f"rejected ({result.reason})",
+        candidate.key(), parent.key(), 100 * result.candidate_rate, 100 * result.parent_rate,
+        len(result.gained_task_ids), len(result.regressed_task_ids),
+    )
+    return result
+
+
+def _admit_prompt(
     candidate: Prompt,
     parent: Prompt,
     other_nodes: dict,

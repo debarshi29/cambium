@@ -23,11 +23,14 @@ CLAUDE.md §3.6 states explicitly, load-bearing for auditability.
 """
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 
 from cambium.prompts.registry import PromptRegistry
 from cambium.retrieval.index import tokenize
 from cambium.skills.registry import SkillRegistry
+
+log = logging.getLogger(__name__)
 
 DEFAULT_DEDUP_SIMILARITY = 0.8
 # Two skills in the *same category* are judged against a looser bar: a
@@ -222,4 +225,9 @@ def run_curation(
     report.skills_capped = cap_skill_library(skill_registry, max_active_skills)
     report.prompts_archived_superseded = archive_superseded_prompts(prompt_registry)
     report.prompts_deduped = dedup_prompts(prompt_registry)
+    log.info(
+        "curation @ gen %d: %d deduped, %d decayed, %d capped, %d prompts archived; %d active skills",
+        generation, len(report.skills_deduped), len(report.skills_decayed), len(report.skills_capped),
+        len(report.prompts_archived_superseded) + len(report.prompts_deduped), len(skill_registry),
+    )
     return report
