@@ -31,10 +31,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=9.0", "pytest-cov>=6.0", "pytest-xdist>=3.6", "ruff>=0.6"]
+dev = ["pytest>=9.0", "pytest-cov>=6.0", "pytest-xdist>=3.6", "ruff>=0.6", "mypy>=1.13", "types-requests>=2.31"]
 
 [dependency-groups]
-dev = ["pytest>=9.0", "pytest-cov>=6.0", "pytest-xdist>=3.6", "ruff>=0.6"]
+dev = ["pytest>=9.0", "pytest-cov>=6.0", "pytest-xdist>=3.6", "ruff>=0.6", "mypy>=1.13", "types-requests>=2.31"]
 
 [project.scripts]
 cambium = "cambium.cli:main"
@@ -57,11 +57,33 @@ pythonpath = ["src"]
 testpaths = ["tests"]
 addopts = "-ra --strict-markers"
 
+[tool.mypy]
+python_version = "3.13"
+# The sandbox harness runs on POSIX in CI and in containers; type-check
+# against that platform so its rlimit/SIGALRM paths are checked rather
+# than flagged as missing on a Windows dev box.
+platform = "linux"
+packages = ["cambium"]
+mypy_path = "src"
+check_untyped_defs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = ["mlflow", "mlflow.*", "dotenv"]
+ignore_missing_imports = true
+
 [tool.coverage.run]
 source = ["cambium"]
 branch = true
+# Runs in the sandbox child process (every sandbox test exercises it), so
+# in-process coverage can't see it.
+omit = ["*/cambium/sandbox/harness_template.py"]
 
 [tool.coverage.report]
+fail_under = 88
 show_missing = true
 skip_covered = true
 
