@@ -76,7 +76,7 @@ class GroqClient:
                 {"role": "user", "content": user},
             ],
         }
-        last_exc = None
+        last_exc: Exception | None = None
         for attempt in range(self.retries + 1):
             try:
                 resp = requests.post(
@@ -95,6 +95,8 @@ class GroqClient:
                 last_exc = exc
                 if attempt < self.retries:
                     time.sleep(1.0)
+        if last_exc is None:  # only reachable with retries < 0
+            raise ValueError(f"GroqClient.retries must be >= 0, got {self.retries}")
         raise last_exc
 
     @staticmethod

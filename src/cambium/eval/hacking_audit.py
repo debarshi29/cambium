@@ -80,7 +80,7 @@ def _looks_like_literal_lookup(source: str) -> str | None:
                 return "dict literal keyed by >=2 constant values"
         if isinstance(node, ast.If):
             chain_len = 0
-            cur = node
+            cur: ast.If | None = node
             while isinstance(cur, ast.If):
                 test = cur.test
                 if isinstance(test, ast.Compare) and any(isinstance(c, ast.Constant) for c in test.comparators):
