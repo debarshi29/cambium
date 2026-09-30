@@ -96,10 +96,17 @@ def run_full_eval(
     pack: TaskPack,
     generations: int = DEFAULT_GENERATIONS,
     freeze_at: int = DEFAULT_FREEZE_AT,
+    task_runner=None,
 ) -> EvalOutcome:
     """The three curves, the tools-vs-prompts ablation, and the hacking
     audit (CLAUDE.md §4). MLflow logging is separate (`log_lineage`) so
-    this stays a pure computation."""
+    this stays a pure computation. `task_runner` swaps the scripted agent
+    for another one with run_task's signature, e.g. the live LLM
+    (docs/adr/0012)."""
+
+    def config(**kw) -> EvolutionConfig:
+        return EvolutionConfig(generations=generations, task_runner=task_runner, **kw)
+
     if not 1 <= freeze_at <= generations:
         raise ValueError(f"freeze_at must be in [1, {generations}], got {freeze_at}")
 
@@ -110,20 +117,16 @@ def run_full_eval(
     report["curve_1_library_off"] = {"solved": off["solved"], "total": off["total"]}
 
     log.info("curve 2: library-on, both evolving (%d generations)", generations)
-    both = run_evolution(pack, EvolutionConfig(generations=generations), "both")
+    both = run_evolution(pack, config(), "both")
     report["curve_2_library_on_evolving"] = curve_series(both)
 
     frozen_record = next(r for r in both.records if r.generation == freeze_at)
     report["curve_3_frozen_at_gen"] = {"frozen_at": freeze_at, **score_frozen_snapshot(frozen_record, pack)}
 
     log.info("ablation: tools-only")
-    tools_only = run_evolution(
-        pack, EvolutionConfig(generations=generations, evolve_skills=True, evolve_prompts=False), "tools_only"
-    )
+    tools_only = run_evolution(pack, config(evolve_skills=True, evolve_prompts=False), "tools_only")
     log.info("ablation: prompts-only")
-    prompts_only = run_evolution(
-        pack, EvolutionConfig(generations=generations, evolve_skills=False, evolve_prompts=True), "prompts_only"
-    )
+    prompts_only = run_evolution(pack, config(evolve_skills=False, evolve_prompts=True), "prompts_only")
     report["ablation"] = {
         "tools_only": curve_series(tools_only),
         "prompts_only": curve_series(prompts_only),
@@ -137,7 +140,8 @@ def run_full_eval(
     return EvalOutcome(report, both, tools_only, prompts_only, findings)
 
 
-def log_lineage(outcome: EvalOutcome, pack: TaskPack, tracking_uri: str | None = None) -> None:
+def log_lineage(outcome: EvalOutcome, pack: TaskPack, tracking_uri: str | None = None,
+                run_name: str = "both-evolving", extra_params: dict | None = None) -> None:
     """MLflow lineage for the both-evolving run (CLAUDE.md §6)."""
     from cambium.eval import lineage
 
@@ -146,8 +150,9 @@ def log_lineage(outcome: EvalOutcome, pack: TaskPack, tracking_uri: str | None =
         "pack_train": len(pack.train),
         "pack_heldout": len(pack.heldout),
         **run_metadata(),
+        **(extra_params or {}),
     }
-    with lineage.evolution_run("both-evolving", params, tracking_uri=tracking_uri):
+    with lineage.evolution_run(run_name, params, tracking_uri=tracking_uri):
         for r in outcome.both.records:
             with lineage.generation_run(r.generation):
                 lineage.log_generation_metrics(

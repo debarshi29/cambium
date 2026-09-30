@@ -50,6 +50,7 @@ def _evaluate(
     task_pack: TaskPack,
     base_skill_registry: SkillRegistry,
     generation: int,
+    task_runner=None,
 ) -> dict:
     """Run every regression task with `prompt` active for `node` (other
     nodes held at whatever is passed in `other_nodes`), against a private
@@ -58,7 +59,9 @@ def _evaluate(
 
     `node == "planner"` uses the eval-only scorer (retrieval + base
     capability, no generation) instead of the full loop — see module
-    docstring / docs/adr/0005."""
+    docstring / docs/adr/0005. `task_runner` defaults to the scripted
+    `run_task`; the live-LLM harness passes its own (same signature)."""
+    runner = task_runner or run_task
     registry = base_skill_registry.clone()
     if node == "planner":
         return score_tasks(regression_task_ids, registry, prompt, task_pack)
@@ -68,7 +71,7 @@ def _evaluate(
     out = {}
     for task_id in regression_task_ids:
         task = task_pack.by_id(task_id)
-        outcome = run_task(
+        outcome = runner(
             task, generation, registry,
             planner=nodes["planner"], reflector=nodes["reflector"], critic=nodes["critic"],
             task_pack=task_pack,
@@ -99,6 +102,7 @@ def _admit_prompt(
     generation: int,
     regression_tolerance: int = 0,
     min_gained_tasks: int = 2,
+    task_runner=None,
 ) -> PromptAdmissionResult:
     if candidate.node != parent.node:
         raise ValueError("candidate and parent must target the same node")
@@ -110,11 +114,11 @@ def _admit_prompt(
 
     candidate_results = _evaluate(
         candidate.node, candidate, other_nodes, regression_task_ids,
-        task_pack, base_skill_registry, generation,
+        task_pack, base_skill_registry, generation, task_runner,
     )
     parent_results = _evaluate(
         parent.node, parent, other_nodes, regression_task_ids,
-        task_pack, base_skill_registry, generation,
+        task_pack, base_skill_registry, generation, task_runner,
     )
 
     candidate_solved = {t for t, ok in candidate_results.items() if ok}

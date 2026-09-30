@@ -9,6 +9,7 @@ every time.
 """
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from cambium.agent.generation import has_generation_bank
@@ -86,6 +87,10 @@ class EvolutionConfig:
     curation_every: int = 2
     mutation_schedule: dict = field(default_factory=lambda: dict(MUTATION_SCHEDULE))
     planner_regression_task_ids: tuple = ()  # () means "all train tasks"
+    # How a single task is attempted. None = the scripted `run_task`; the
+    # live-LLM curve passes functools.partial(run_task_llm, client=...),
+    # which has the same signature (docs/adr/0012).
+    task_runner: Callable | None = None
 
 
 @dataclass
@@ -101,6 +106,7 @@ def run_evolution(task_pack: TaskPack, config: EvolutionConfig, label: str = "ru
     admission_log = []
     records = []
     planner_regression = config.planner_regression_task_ids or tuple(t.id for t in task_pack.train)
+    runner = config.task_runner or run_task
 
     for gen in range(1, config.generations + 1):
         if config.evolve_prompts and gen in config.mutation_schedule:
@@ -121,7 +127,7 @@ def run_evolution(task_pack: TaskPack, config: EvolutionConfig, label: str = "ru
             )
             result = admit_prompt(
                 candidate, parent, other_nodes, regression_ids, task_pack,
-                prompt_registry, skill_registry, gen,
+                prompt_registry, skill_registry, gen, task_runner=runner,
             )
             admission_log.append((f"prompt:{node}:gen{gen}", result))
 
@@ -131,7 +137,7 @@ def run_evolution(task_pack: TaskPack, config: EvolutionConfig, label: str = "ru
 
         train_solved = 0
         for task in task_pack.train:
-            outcome = run_task(
+            outcome = runner(
                 task, gen, skill_registry, planner, reflector, critic, task_pack,
                 persist_skills=config.evolve_skills,
             )
