@@ -75,6 +75,9 @@ left for someone to discover the gap.
    (determinism, cost, reproducibility; ADR 0007's rationale). Running the
    harness itself through the live path, seeded and repeated, as an
    explicitly separate fourth curve is the next real step here.
+   **Mechanics done** in `docs/adr/0012-llm-record-replay.md` (`cambium
+   eval --agent llm`, record/replay cassettes); live numbers still need a
+   run with an API key.
 2. ~~Task pack to spec size (60 tasks)~~ -- **done**, `docs/adr/0010`.
 3. ~~A curation stress scenario~~ -- **done**, see
    `docs/adr/0011-curation-stress-test.md` (and the two curation flaws it

@@ -231,8 +231,24 @@ Try it yourself:
 
 ```bash
 cp .env.example .env        # then paste in a Groq API key
-python scripts/run_llm_demo.py
+cambium llm-demo            # one task per category, live
 ```
+
+**The full eval on the live model, reproducibly** ([ADR 0012](docs/adr/0012-llm-record-replay.md)):
+the harness takes a pluggable agent, and every prompt/response is recorded
+to a JSONL cassette that replays offline with no key:
+
+```bash
+# once, with a key: record (writes results/eval_report_llm.json)
+cambium eval --agent llm --llm-mode record --llm-cache results/llm_cassette.jsonl
+# forever after, anyone, no key, no network: identical report
+cambium eval --agent llm --llm-mode replay --llm-cache results/llm_cassette.jsonl
+```
+
+No live-model curve is reported in this README yet: the environment this
+was built in had no API key, and the numbers above are not going to be
+padded with invented ones. The mechanics are verified offline (a recorded
+oracle run replays to an identical report; `tests/test_llm_cache.py`).
 
 ---
 
@@ -299,6 +315,7 @@ if either drifts from `src/cambium/`, the code wins.
 | [0009](docs/adr/0009-container-sandbox.md) | Container (Docker) sandbox tier behind a pluggable backend |
 | [0010](docs/adr/0010-full-task-pack.md) | Task pack grown to spec size: 60 tasks, 40 train / 20 held-out |
 | [0011](docs/adr/0011-curation-stress-test.md) | Curation stress test, and the two curation flaws it found |
+| [0012](docs/adr/0012-llm-record-replay.md) | Reproducible live-LLM runs via record/replay; the harness on the LLM agent |
 
 ---
 
