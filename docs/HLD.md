@@ -28,25 +28,29 @@ coupling to any external memory system.
 ## 2. System context
 
 There is no running service. cambium is a research harness invoked from
-the command line, against a local, versioned filesystem — no clients, no
-network dependency for its core loop (the sandbox explicitly denies
-network access to candidate code), no persistent server process.
+the command line (`cambium ...`, or the `scripts/` wrappers), against a
+local, versioned filesystem: no clients, no network dependency for its
+core loop (the sandbox denies network access to candidate code), no
+persistent server process.
 
 ```mermaid
 flowchart LR
-    dev["developer / reviewer"] -->|python scripts/*.py| cambium["cambium harness"]
+    dev["developer / reviewer"] -->|cambium eval / stress / ...| cambium["cambium harness"]
     cambium -->|reads| pack["task pack\nsrc/cambium/tasks/data/*.json"]
-    cambium -->|spawns, no network| sandbox["subprocess sandbox\npython -I -S"]
-    cambium -->|writes| results["results/*.json"]
-    cambium -->|logs runs| mlflow["MLflow (sqlite:///mlruns.db)"]
+    cambium -->|runs candidates, no network| sandbox["sandbox backend\nsubprocess or docker"]
+    cambium -->|writes| results["results/*.json\n(reports + library snapshots)"]
+    cambium -->|logs runs| mlflow["MLflow\n(sqlite:///mlruns.db or MLFLOW_TRACKING_URI)"]
     cambium -.->|optional, live path only| groq["Groq API"]
-    ci["GitHub Actions"] -->|pytest + ruff| cambium
+    cambium -.->|record / replay| cassette["LLM cassette (JSONL)"]
+    ci["GitHub Actions"] -->|ruff, mypy, pytest + coverage,\ndocker tier, image build| cambium
 ```
 
 The one external network dependency is optional and isolated: the live-LLM
-path (`cambium.agent.llm_client`) calls the Groq API when explicitly
-invoked (`scripts/run_llm_demo.py`); the reproducible eval curves never
-do (see [ADR 0007](adr/0007-live-llm-integration.md)).
+path (`cambium.agent.llm_client`) calls the Groq API only when explicitly
+invoked (`cambium llm-demo`, `cambium eval --agent llm`). Every live
+exchange can be recorded to a cassette and replayed offline
+([ADR 0012](adr/0012-llm-record-replay.md)); the reported scripted curves
+never touch the network ([ADR 0007](adr/0007-live-llm-integration.md)).
 
 ---
 
@@ -57,13 +61,15 @@ do (see [ADR 0007](adr/0007-live-llm-integration.md)).
 | Component | Package | Responsibility |
 |---|---|---|
 | Task pack | `cambium.tasks` | Loads the versioned task set, enforces the train/held-out split invariant |
-| Sandbox | `cambium.sandbox` | Executes arbitrary candidate source against fixed test cases, isolated |
+| Sandbox | `cambium.sandbox` | Executes candidate source in a pluggable backend (subprocess or Docker); the parent judges results; optional verdict cache |
+| Library store | `cambium.library` | Atomic, versioned, tamper-checked JSON snapshots of both registries |
 | Skill library | `cambium.skills` | Schema, versioned registry, admission gate |
 | Prompt library | `cambium.prompts` | Schema (versioned per loop node), registry, admission gate |
 | Retrieval | `cambium.retrieval` | Keyword-overlap skill search + recall@k instrumentation |
 | Curation | `cambium.curation` | Dedup, usage-decay deprecation, size cap, prompt version archiving |
 | Agent | `cambium.agent` | Base capabilities, scripted + live generation, the fixed control loop |
-| Eval | `cambium.eval` | Eval-only scoring, the three curves + attribution ablation, hacking audit, MLflow lineage |
+| Eval | `cambium.eval` | Eval-only scoring, the three curves + attribution ablation, hacking audit, curation stress test, MLflow lineage |
+| CLI | `cambium.cli` | `cambium eval / baseline / stress / llm-demo / tasks / library` |
 
 Every package's own module docstring cites the `CLAUDE.md` section or ADR
 that motivates it — that's the first place to look when a design choice
@@ -158,12 +164,18 @@ generation can do regardless of any library
 | Decision | ADR |
 |---|---|
 | Fixed 5-node control loop; only prompts/tools evolve | [0001](adr/0001-base-loop-choice.md) |
-| Scripted stand-in for the LLM-backed agent (this session's default) | [0002](adr/0002-agent-stand-in.md) |
-| 27-task pack (18 train / 9 held-out), scaled from the ~60-task spec | [0003](adr/0003-scaled-demo.md) |
-| Subprocess isolation as the sandbox tier | [0004](adr/0004-sandbox-tier.md) |
+| Scripted stand-in for the LLM-backed agent (default for reported curves) | [0002](adr/0002-agent-stand-in.md) |
+| Original 27-task pack (superseded in scale by 0010) | [0003](adr/0003-scaled-demo.md) |
+| Subprocess isolation as the minimum sandbox tier | [0004](adr/0004-sandbox-tier.md) |
 | Node-specific evaluation path for prompt admission | [0005](adr/0005-eval-only-scoring.md) |
 | Sprint 6 scope wrap-up: what shipped, what didn't | [0006](adr/0006-sprint-6-wrapup.md) |
-| Live Groq LLM wired through the ADR 0002 seam, kept out of reported curves | [0007](adr/0007-live-llm-integration.md) |
+| Live Groq LLM wired through the ADR 0002 seam | [0007](adr/0007-live-llm-integration.md) |
+| Sandbox hardening: parent-side judging, audit hook, rlimits | [0008](adr/0008-sandbox-hardening.md) |
+| Container (Docker) sandbox tier behind a pluggable backend | [0009](adr/0009-container-sandbox.md) |
+| Task pack at spec size: 60 tasks, 40 train / 20 held-out | [0010](adr/0010-full-task-pack.md) |
+| Curation stress test; coverage-aware curation | [0011](adr/0011-curation-stress-test.md) |
+| Record/replay for live-LLM runs; the harness on the LLM agent | [0012](adr/0012-llm-record-replay.md) |
+| v1.0 wrap-up | [0013](adr/0013-v1-wrapup.md) |
 
 ---
 
@@ -171,38 +183,45 @@ generation can do regardless of any library
 
 | Requirement | How it's met |
 |---|---|
-| **No network from candidate code** | Sandbox subprocess spawned with `env={}`, isolated Python mode (`-I -S`); see [ADR 0004](adr/0004-sandbox-tier.md) |
-| **Hard execution timeout** | `subprocess.run(..., timeout=5.0)` per sandbox call, no exceptions |
-| **Determinism / reproducibility of reported results** | Scripted generation stand-in, no live model in the eval path; seeded, fixed task pack, fixed mutation schedule |
-| **Auditability** | Curation deprecates, never deletes — every skill/prompt version stays in the registry's history, `deprecated=True` only |
-| **No held-out leakage into training decisions** | Every admission-gate reuse check and regression subset is asserted train-only at the call site ([ADR 0003](adr/0003-scaled-demo.md)) |
-| **Lineage** | MLflow (`cambium.eval.lineage`) — one parent run per evolution, one nested child run per generation, metrics + a JSON library snapshot logged at each |
-| **CI verification** | GitHub Actions runs `ruff check .` and `pytest` on every push/PR |
+| **Candidate code can't fake a pass** | The child never receives expected outputs; it reports JSON return values and the parent compares with strict equality ([ADR 0008](adr/0008-sandbox-hardening.md)) |
+| **No network / processes / stray writes from candidate code** | PEP 578 audit hook in the child (both tiers); Docker tier adds `--network none`, read-only root, `--cap-drop ALL`, `--pids-limit` ([ADR 0009](adr/0009-container-sandbox.md)) |
+| **Resource caps** | Wall-clock timeout everywhere; `setrlimit` memory/CPU/file-size on POSIX; cgroup memory/CPU on the Docker tier |
+| **Fail closed** | An unknown or unusable sandbox backend raises `SandboxBackendError`; it never downgrades silently |
+| **Determinism / reproducibility** | Scripted agent for reported curves; `cambium eval` reproduces `results/eval_report.json` byte for byte; live runs recorded to replayable cassettes |
+| **Auditability** | Curation archives, never deletes, and records a reason; library snapshots keep full version history; skill sources are fingerprinted and checked on load |
+| **No held-out leakage into training decisions** | Every admission reuse check and regression subset is train-only ([ADR 0003](adr/0003-scaled-demo.md), enforced by tests) |
+| **Lineage** | MLflow: one parent run per evolution, one nested run per generation, metrics + a reloadable library snapshot per generation |
+| **Bounded library** | Coverage-aware curation keeps the active library under its cap across 25 generations of noisy proposals ([ADR 0011](adr/0011-curation-stress-test.md)) |
+| **CI verification** | ruff, mypy, pytest on 3.13/3.14 with an 88% coverage gate, the sandbox suite on the Docker tier, pip-install and Docker-image smoke tests |
 
 ---
 
 ## 8. Deployment / runtime model
 
-Nothing is deployed. The unit of execution is a Python script run locally:
+Nothing is deployed. The unit of execution is a CLI command:
 
-- `scripts/demo.py` — the single "reproduce everything" entry point (baseline → generation demo → recall demo → curation demo → full eval harness).
-- `scripts/run_llm_demo.py` — the separate live-model path, requires `GROQ_API_KEY`.
-- `python -m pytest` — 82 tests, no network, no API key required.
+- `cambium eval`: the three curves, ablation, hacking audit, lineage (`--agent llm` for the live model).
+- `cambium stress`: the 25-generation curation stress test.
+- `cambium baseline`, `cambium tasks`, `cambium library show|diff`, `cambium llm-demo`.
+- `python scripts/demo.py`: everything, in order.
+- `docker build -t cambium . && docker run --rm cambium eval --no-mlflow`: the same, in a pinned environment.
+- `pytest -n auto`: the full suite, no network, no API key required.
 
-MLflow lineage writes to a local SQLite file (`mlruns.db`, gitignored);
-`mlflow ui --backend-store-uri sqlite:///mlruns.db` browses it. There is no
-tracking server, no container orchestration, no CI deployment step beyond
-lint + test — this is a research artifact, not a service.
+MLflow lineage writes to a local SQLite file by default (`mlruns.db`,
+gitignored), or wherever `--tracking-uri` / `MLFLOW_TRACKING_URI` points.
+This is a research artifact, not a service.
 
 ---
 
 ## 9. Known limitations
 
-Full accounting in [ADR 0006](adr/0006-sprint-6-wrapup.md). The headline
-ones: 27 tasks rather than the spec's ~60; a scripted stand-in still
-drives the reported curves even though a live path now exists in parallel
-([ADR 0007](adr/0007-live-llm-integration.md)); curation has never been
-exercised under real growth pressure past generation 3, since the task
-pack is fully solved by then; subprocess rather than container sandboxing.
-None of these are hidden — each carries a docstring pointing back to its
-ADR at the point in the code where it matters.
+Full accounting in [ADR 0013](adr/0013-v1-wrapup.md). The headline ones:
+the reported curves are still driven by the scripted stand-in. The live
+LLM curve is one `cambium eval --agent llm --llm-mode record` away but
+has not been run, because the build environment had no API key. 20
+held-out tasks is the spec's size but still small-n. The curation stress
+test's noise is *correct* code, so it shows retrieval degradation from
+ungated growth but not solve-rate degradation. And the subprocess tier's
+audit hook is a CPython-level control; use the Docker tier for untrusted
+code. Each limitation carries a docstring pointing back to its ADR at the
+point in the code where it matters.

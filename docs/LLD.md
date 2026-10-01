@@ -12,21 +12,26 @@ this drifts from it — every field/method name below is taken directly from
 
 ```
 src/cambium/
-├── tasks/       schema.py, pack.py, data/*.json (27 task files)
-├── sandbox/     runner.py
+├── tasks/       schema.py, pack.py, data/*.json (60 task files)
+├── sandbox/     runner.py (backends, judging), harness_template.py (child),
+│                docker_backend.py, cache.py
 ├── skills/      schema.py, registry.py, admission.py
 ├── prompts/     schema.py, registry.py, admission.py, defaults.py
+├── library/     store.py (persistence)
 ├── retrieval/   index.py, recall.py, ground_truth.json
 ├── curation/    curator.py
 ├── agent/       base_capabilities.py, generation.py, solver.py, loop.py,
-│                llm_client.py, llm_generation.py
-└── eval/        scoring.py, harness.py, hacking_audit.py, lineage.py
+│                llm_client.py, llm_generation.py, llm_cache.py
+├── eval/        scoring.py, harness.py, hacking_audit.py, lineage.py,
+│                stress.py, experiments.py
+└── cli.py, __main__.py
 ```
 
-Dependency direction is strictly downward through this list — e.g.
+Dependency direction is strictly downward through this list: e.g.
 `eval` imports `agent`/`curation`/`prompts`/`skills`, never the reverse;
 `skills` and `prompts` never import `agent` or `eval`. `tasks` and
-`sandbox` have no internal dependencies at all.
+`sandbox` have no internal dependencies at all. `cli` sits on top of
+everything and is imported by nothing.
 
 ---
 
@@ -146,37 +151,63 @@ invariant is what keeps held-out data out of every admission decision
 
 ## 4. `sandbox` — isolated execution
 
-`run_in_sandbox(source, fn_name, cases, timeout=5.0) -> SandboxResult`
+`run_in_sandbox(source, fn_name, cases, timeout=None, limits=None, backend=None) -> SandboxResult`
 
 ```python
+@dataclass(frozen=True)
+class SandboxLimits:
+    timeout: float = 5.0
+    memory_mb: int = 512
+    max_output_bytes: int = 64 * 1024
+
 @dataclass
 class SandboxResult:
     ok: bool
-    reason: str      # "ok" | "assertion_failed" | "exception" | "timeout"
+    reason: str  # ok | assertion_failed | exception | timeout | violation | resource_limit
     stdout: str
     stderr: str
     returncode: int
 ```
 
-Algorithm:
-1. Build a harness: candidate `source` concatenated (not
-   dedented/interpolated — see the module docstring for why f-string
-   dedent corrupts arbitrary indentation) with a fixed test-loop template,
-   placeholders substituted via `.replace()` (`__CASES__`, `__FN_NAME__`,
-   `__OK_MARKER__`) rather than `.format()`, since candidate source may
-   itself contain `{`/`}`.
-2. Write it to a file in a fresh `TemporaryDirectory`.
-3. `subprocess.run([sys.executable, "-I", "-S", script_path], env={}, cwd=tmpdir, timeout=timeout, capture_output=True)`.
-   - `-I` isolated mode (ignores `PYTHONPATH`/user site), `-S` no
-     `site` import.
-   - `env={}` — no inherited environment at all: no proxy vars, no
-     credentials, no `PATH`.
-4. Classify: `returncode == 0` and the OK marker present in stdout → `ok`;
-   `"AssertionError" in stderr` → `assertion_failed`; anything else →
-   `exception`; `subprocess.TimeoutExpired` → `timeout`.
+`backend` defaults to the process-wide one: `CAMBIUM_SANDBOX=subprocess`
+(default) or `docker`, optionally wrapped in a `CachingBackend`
+(`CAMBIUM_SANDBOX_CACHE=1`). An unknown or unusable backend raises
+`SandboxBackendError`. The default is chosen with `is None`, never `or`,
+because an empty cache defines `__len__` and is falsy.
+
+Algorithm (identical for both tiers, see `write_sandbox_dir` / `judge`):
+1. Fresh scratch dir containing `candidate.py` (the source),
+   `harness.py` (a copy of `harness_template.py`) and `cases.json`
+   (**call arguments only**, never expected values).
+2. Child: `python -I -S harness.py <limits-json>`, `env={}`, cwd = scratch
+   dir. Subprocess tier: a local child process. Docker tier: `docker run
+   --rm --network none --read-only --tmpfs /tmp --cap-drop ALL
+   --security-opt no-new-privileges --user 65534:65534 --memory/--memory-swap
+   --cpus 1 --pids-limit 64 -v <scratch>:/sandbox`.
+3. In the child, before any candidate code: read inputs; apply rlimits
+   (`RLIMIT_AS`, `RLIMIT_CPU`, `RLIMIT_FSIZE`; POSIX); arm a `SIGALRM`
+   wall-clock timer (POSIX); install the audit hook. The hook refuses
+   events with prefixes `socket.`, `subprocess.`, `os.system`, `os.exec`,
+   `os.spawn`, `os.posix_spawn`, `os.fork`, `os.kill`, `ctypes.`, ... and
+   `import ctypes`, and refuses filesystem mutation (`open` for writing,
+   `os.remove`, `os.rename`, `shutil.rmtree`, ...) outside the scratch dir.
+4. `exec` the candidate, call `fn_name` per case, write each return value
+   (JSON round-tripped; non-serializable → error) to `result.json`.
+5. Parent (`judge`): no result file → `resource_limit` if killed by a
+   limit signal (negative code, or `128+N` from a container), else
+   `exception`. Child-reported error → `violation` / `timeout` /
+   `resource_limit` / `exception`. Otherwise compare each value with
+   `values_equal` (strict structural equality over JSON; `True != 1`) →
+   first mismatch is `assertion_failed` with an
+   `AssertionError: case i failed: args=... expected=... got=...` line.
+6. stdout/stderr read back capped at `max_output_bytes`.
+
+`CachingBackend(inner, maxsize=8192)`: LRU keyed by sha256 of (source,
+fn_name, full cases, limits); caches only `ok`, `assertion_failed`,
+`exception`, `violation`.
 
 This is the **one and only** execution path for untrusted code in the
-whole system — the admission gate, the training loop, and the eval-only
+whole system: the admission gate, the training loop, and the eval-only
 scorer all route through it.
 
 ---
@@ -195,6 +226,10 @@ coexist in history while exactly one (or zero) is "live" per name.
 **never removes**. `.clone()` is `copy.deepcopy`, used by prompt
 admission to trial-run a candidate without polluting the registry
 actually driving production curves.
+
+`next_version(name)`, `all_skills()` (full history, stable order),
+`to_dict()` / `from_dict()`. `deprecate(name, version, reason)` stores the
+reason on the skill (`deprecation_reason`).
 
 ### 5.2 `admit_skill(candidate, registry, task_pack) -> AdmissionResult`
 
@@ -336,36 +371,37 @@ base capability even when retrieval completely misses.
 
 ## 8. `curation` — dedup, decay, cap, archive
 
-Constants: `DEDUP_SIMILARITY=0.8`, `UNUSED_FOR_N_GENERATIONS=5`,
-`MIN_SUCCESS_RATE=0.5`, `MAX_ACTIVE_SKILLS=20`.
+Constants: `DEDUP_SIMILARITY=0.8`, `SAME_CATEGORY_DEDUP_SIMILARITY=0.45`,
+`UNUSED_FOR_N_GENERATIONS=5`, `MIN_SUCCESS_RATE=0.5`,
+`MAX_ACTIVE_SKILLS=20`.
 
-### 8.1 `dedup_skills(registry, threshold=0.8) -> [(kept, dropped)]`
+A **sole cover** is an active skill that is the only active skill of its
+category. Decay never removes one; the cap removes one only as a last
+resort ([ADR 0011](adr/0011-curation-stress-test.md)).
+
+### 8.1 `dedup_skills(registry, threshold=0.8, same_category_threshold=0.45) -> [(kept, dropped)]`
 
 All-pairs comparison over `registry.active()` (sorted by name for
 deterministic iteration): Jaccard similarity of `tokenize(retrieval_text())`
-sets, `len(a & b) / len(a | b)`. Pairs `>= threshold` are merged via
-`_rank_pair` — keep the higher `(success_rate, invocations, name)` tuple,
-deprecate the other with `reason="near-duplicate"`. A skill already
-dropped in this pass is skipped for the rest of it (no cascading
-re-comparison against a deprecated skill).
+sets. Pairs in the same category use `same_category_threshold`, others
+`threshold`. Merged pairs keep the higher `(success_rate, invocations,
+name)` and deprecate the other with `reason="near-duplicate"`. A skill
+already dropped in this pass is skipped for the rest of it.
 
 ### 8.2 `decay_deprecate_skills(registry, current_generation, unused_for_n_generations=5, min_success_rate=0.5) -> [name]`
 
-A skill is deprecated iff **both**:
+A skill that is not a sole cover is deprecated iff **both**:
 - **stale**: never used and the library predates the window
   (`last_used_generation is None and current_generation >
   unused_for_n_generations`), or last used more than the window ago;
 - **weak**: zero invocations, or `success_rate < min_success_rate`.
 
-Zero invocations counts as failing "weak," not passing by default — an
-unused skill can't earn a pass on success rate it never demonstrated.
-
 ### 8.3 `cap_skill_library(registry, max_active=20) -> [name]`
 
-If `len(active) > max_active`: rank ascending by `(success_rate,
-invocations, last_used_generation or -1)` — worst value first — and
-deprecate the lowest `len(active) - max_active` entries. Soft
-deprecation only, same as decay.
+While `len(registry) > max_active`: among the non-sole-cover skills (or all
+skills, if every remaining skill is a sole cover), deprecate the minimum by
+`(success_rate, invocations, last_used_generation or -1)` with
+`reason="size cap"`. The cap stays hard.
 
 ### 8.4 `archive_superseded_prompts(registry) -> [(node, version)]`
 
@@ -477,6 +513,29 @@ CLAUDE.md §6 asks for.
 
 ---
 
+## 9.5 `eval.stress`, `eval.experiments`, `library.store`, `agent.llm_cache`, `cli`
+
+- `run_stress(task_pack, StressConfig) -> StressResult`: bootstrap 3
+  generations, then `generations` rounds of: propose
+  `variants_per_generation` variants (same code, `fn_v{gen}_{i}`, docstring
+  + `drift_words` sampled words, seeded) through `admit_skill`; run train;
+  curate every `curation_every`; record size, versions, deprecations,
+  held-out, recall@1/@k.
+- `run_full_eval(pack, generations, freeze_at, task_runner=None) -> EvalOutcome`;
+  `run_baseline(pack)`; `log_lineage(outcome, pack, tracking_uri, run_name, extra_params)`.
+- `save_library(path, skills, prompts, generation, metadata)` /
+  `load_library(path) -> LibrarySnapshot`: `schema_version=1`, atomic
+  write (temp + `os.replace`), skill `fingerprint` (sha256 of source,
+  16 hex) verified on load.
+- `RecordReplayClient(cassette, mode, inner)`: key = sha256(model,
+  temperature, max_tokens, system, user); JSONL append; `replay` raises
+  `LLMCacheMiss` on unknown prompts.
+- `cambium.cli.main(argv) -> int`: exit 0 ok, 2 for known failures
+  (sandbox, library, args, LLM config), 1 for `library diff --exit-code`
+  differences, 130 on Ctrl-C.
+
+---
+
 ## 10. Known bugs found and fixed (transparency, not erasure)
 
 Each is documented at its fix site, not just here:
@@ -488,6 +547,12 @@ Each is documented at its fix site, not just here:
 | Planner mutation never admitted | `prompts/admission.py` | Full-loop evaluation let the reflector's generation fallback mask retrieval-only improvements | Node-specific `_evaluate()`, planner → `eval.scoring.score_tasks` ([ADR 0005](adr/0005-eval-only-scoring.md)) |
 | Missing planner entry in `MUTATION_SCHEDULE` | `eval/harness.py` | Simple omission | Added `3: ("planner", 2, ())`, caught by empty `admission_log` inspection |
 | Task pack missing train-only reuse partners | `tasks/data/*.json` | Initial 20-task pack had 4/7 skill categories with only a train+heldout pair | Restructured to 27 tasks, every skill category gets 2 train + 1 heldout |
+| Forgeable sandbox pass (printed OK marker; always-equal return object) | `sandbox/runner.py` | Parent trusted a stdout marker; comparison ran in the child with `!=` | Child gets args only; parent judges JSON values strictly ([ADR 0008](adr/0008-sandbox-hardening.md)) |
+| Empty cache backend silently ignored | `sandbox/runner.py` | `backend or default` with a backend defining `__len__` | `if backend is None` |
+| Curation deleted a category's only skill; dedup never fired | `curation/curator.py` | Success rate penalized retrieval mistakes; 0.8 threshold vs ~0.5 for paraphrases | Coverage-aware decay/cap; same-category threshold ([ADR 0011](adr/0011-curation-stress-test.md)) |
+| Version collision on re-admission | `skills/admission.py` | Re-solved category re-proposed `<cat>_skill@v1` after curation archived v1 | Lands as `next_version` |
+| CLI `--sandbox` leaked into later calls | `cli.py` | Mutated `os.environ` | `backend_from_env(choice)` |
+| `GroqClient.chat` could `raise None` | `agent/llm_client.py` | Negative `retries` skipped the loop | Explicit error (found by mypy) |
 
 ---
 
@@ -495,9 +560,12 @@ Each is documented at its fix site, not just here:
 
 | Module | Test file |
 |---|---|
-| `sandbox.runner` | `test_sandbox.py` |
+| `sandbox.runner` | `test_sandbox.py` (incl. forgery, isolation, limits) |
+| `sandbox.docker_backend`, backend selection | `test_sandbox_backends.py` (docker tests run in CI's docker job) |
+| `sandbox.cache` | `test_sandbox_cache.py` |
 | `tasks.pack` / `schema` | `test_task_pack.py` |
 | `skills.registry` | `test_skills_registry.py` |
+| `library.store` | `test_library_store.py` |
 | `agent.base_capabilities` | `test_base_solver.py` |
 | `agent.generation` | `test_generation.py` |
 | `skills.admission` | `test_skill_admission.py` |
@@ -506,12 +574,17 @@ Each is documented at its fix site, not just here:
 | `retrieval.recall` | `test_recall.py` |
 | `prompts.registry` | `test_prompt_registry.py` |
 | `curation.curator` | `test_curation.py` |
+| `eval.stress` | `test_curation_stress.py` |
 | `eval.scoring` | `test_eval_scoring.py` |
 | `eval.hacking_audit` | `test_hacking_audit.py` |
 | `eval.harness` | `test_eval_harness.py` |
+| `eval.lineage` | `test_lineage.py` (throwaway sqlite store) |
+| `cli`, `eval.experiments` | `test_cli.py` |
 | `agent.llm_client` | `test_llm_client.py` (mocked `requests.post`, no network) |
 | `agent.llm_generation` | `test_llm_generation.py` (fake client) |
 | `agent.loop` (`run_task_llm`) | `test_llm_loop.py` (scripted fake client) |
+| `agent.llm_cache`, harness on the LLM agent | `test_llm_cache.py` (offline oracle client) |
 
-82 tests total, zero network calls, zero API keys required — CI runs the
-full suite on every push.
+~160 tests, zero network calls, zero API keys required. CI runs them on
+Python 3.13 and 3.14 with an 88% coverage gate, plus the sandbox suite
+against the Docker tier.
