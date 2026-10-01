@@ -98,6 +98,7 @@ def _llm_client(args: argparse.Namespace):
 def cmd_eval(args: argparse.Namespace) -> int:
     import functools
 
+    from cambium.agent.llm_cache import RecordReplayClient
     from cambium.agent.loop import run_task_llm
     from cambium.eval.experiments import log_lineage, run_full_eval
     from cambium.library.store import save_library
@@ -106,15 +107,12 @@ def cmd_eval(args: argparse.Namespace) -> int:
     # A replayed cassette is as deterministic as the scripted agent.
     _configure_sandbox(args, deterministic=not live or args.llm_mode == "replay")
     pack = _pack(args)
-    runner = None
-    client = None
-    if live:
-        client = _llm_client(args)
-        runner = functools.partial(run_task_llm, client=client)
+    client = _llm_client(args) if live else None
+    runner = functools.partial(run_task_llm, client=client) if client is not None else None
     outcome = run_full_eval(pack, generations=args.generations, freeze_at=args.freeze_at,
                             task_runner=runner)
     report = outcome.report
-    if live:
+    if client is not None:
         report["agent"] = {"kind": "llm", "model": client.model, "llm_mode": args.llm_mode}
 
     off = report["curve_1_library_off"]
@@ -147,7 +145,7 @@ def cmd_eval(args: argparse.Namespace) -> int:
                  metadata={"run": f"both-evolving{suffix}", "generations": args.generations,
                            **report.get("agent", {})})
     print(f"written to {out_dir}")
-    if live and hasattr(client, "hits"):
+    if isinstance(client, RecordReplayClient):
         print(f"llm cassette: {client.hits} replayed, {client.calls} live call(s) -> {args.llm_cache}")
 
     if not args.no_mlflow:

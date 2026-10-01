@@ -67,7 +67,7 @@ class RecordReplayClient:
         self.inner = inner
         # Request parameters are part of the key; take them from the inner
         # client when there is one so record and replay agree.
-        self.model = model or getattr(inner, "model", "unknown")
+        self.model: str = model or str(getattr(inner, "model", "unknown"))
         self.temperature = temperature if temperature is not None else getattr(inner, "temperature", 0.0)
         self.max_tokens = max_tokens if max_tokens is not None else getattr(inner, "max_tokens", 0)
         self.hits = 0
@@ -103,6 +103,7 @@ class RecordReplayClient:
                 f"prompt not on cassette {self.cassette} (key {key[:12]}); "
                 "re-record with --llm-mode record or auto"
             )
+        assert self.inner is not None  # guaranteed by __init__ for record/auto
         response = self.inner.chat(system, user)
         with self._lock:
             self.calls += 1

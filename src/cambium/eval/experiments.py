@@ -48,7 +48,7 @@ def score_baseline_split(tasks: list) -> dict:
     per_task = {}
     for task in tasks:
         attempt = solver.attempt(task)
-        if not attempt.solved:
+        if not attempt.solved or attempt.source is None:
             per_task[task.id] = {"solved": False, "reason": "agent_could_not_attempt"}
             continue
         result = run_in_sandbox(attempt.source, attempt.fn_name, task.cases_as_dicts())

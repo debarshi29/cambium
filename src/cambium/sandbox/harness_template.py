@@ -18,6 +18,7 @@ import json
 import os
 import sys
 import traceback
+from typing import Any
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _LIMITS = json.loads(sys.argv[1]) if len(sys.argv) > 1 else {}
@@ -195,9 +196,9 @@ def main():
     _arm_alarm()
     sys.addaudithook(_audit)
 
-    results = []
+    results: list[dict] = []
     try:
-        namespace = {"__name__": "__candidate__", "__builtins__": __builtins__}
+        namespace: dict[str, Any] = {"__name__": "__candidate__", "__builtins__": __builtins__}
         exec(compile(source, "candidate.py", "exec"), namespace)
         fn = namespace[fn_name]
     except BaseException as exc:  # noqa: BLE001 -- report anything, incl. SystemExit

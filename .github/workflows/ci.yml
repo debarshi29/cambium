@@ -22,6 +22,8 @@ jobs:
         run: uv sync --frozen --group dev
       - name: Lint (ruff)
         run: uv run ruff check .
+      - name: Type check (mypy)
+        run: uv run mypy
 
   test:
     runs-on: ubuntu-latest
@@ -78,3 +80,16 @@ jobs:
           tests/test_sandbox_backends.py
           tests/test_sandbox.py
           tests/test_skill_admission.py
+
+  docker-image:
+    # The reproducible-environment image builds and runs the CLI.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: docker build -t cambium:ci .
+      - name: Smoke test
+        run: |
+          docker run --rm cambium:ci --version
+          docker run --rm cambium:ci tasks --split heldout
+          docker run --rm cambium:ci baseline --out /tmp/results
