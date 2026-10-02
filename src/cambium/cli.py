@@ -3,7 +3,7 @@
     cambium eval            three curves + ablation + hacking audit (+ MLflow)
     cambium baseline        curve 1 only: library-off
     cambium stress          curation stress test, curated vs. uncurated
-    cambium llm-demo        live-LLM smoke test (needs GROQ_API_KEY)
+    cambium llm-demo        live-LLM smoke test (needs GEMINI_API_KEY or GROQ_API_KEY)
     cambium tasks           list the task pack
     cambium library show    summarize a saved library file
     cambium library diff    compare two saved libraries by source fingerprint
@@ -81,18 +81,23 @@ def _frac(n: int, d: int) -> str:
 # commands
 
 def _llm_client(args: argparse.Namespace):
-    """GroqClient, optionally behind a record/replay cassette."""
+    """LLMClient for the chosen provider, optionally behind a record/replay
+    cassette."""
     from cambium.agent.llm_cache import RecordReplayClient
-    from cambium.agent.llm_client import GroqClient
+    from cambium.agent.llm_client import LLMClient
 
+    # Built even for replay (constructing it needs no key): its model,
+    # temperature and max_tokens are part of every cassette key, so replay
+    # must use the same values the recording did.
+    client = LLMClient(provider=args.provider, model=args.model or "")
     if args.llm_mode == "replay":
         if not args.llm_cache:
             raise ValueError("--llm-mode replay needs --llm-cache PATH")
-        return RecordReplayClient(args.llm_cache, mode="replay", model=args.model or None)
-    inner = GroqClient(model=args.model) if args.model else GroqClient()
+        return RecordReplayClient(args.llm_cache, mode="replay", model=client.model,
+                                  temperature=client.temperature, max_tokens=client.max_tokens)
     if not args.llm_cache:
-        return inner
-    return RecordReplayClient(args.llm_cache, mode=args.llm_mode, inner=inner)
+        return client
+    return RecordReplayClient(args.llm_cache, mode=args.llm_mode, inner=client)
 
 
 def cmd_eval(args: argparse.Namespace) -> int:
@@ -193,7 +198,7 @@ def cmd_stress(args: argparse.Namespace) -> int:
 
 def cmd_llm_demo(args: argparse.Namespace) -> int:
     from cambium.agent.llm_cache import LLMCacheMiss
-    from cambium.agent.llm_client import GroqConfigError
+    from cambium.agent.llm_client import LLMConfigError
     from cambium.agent.loop import run_task_llm
     from cambium.prompts.defaults import seed_default_registry
     from cambium.skills.registry import SkillRegistry
@@ -211,13 +216,14 @@ def cmd_llm_demo(args: argparse.Namespace) -> int:
             tasks.append(task)
     tasks = tasks[: args.limit] if args.limit else tasks
 
-    print(f"model: {client.model}   tasks: {len(tasks)}")
+    provider = getattr(getattr(client, "inner", client), "provider", "replay")
+    print(f"provider: {provider}   model: {client.model}   tasks: {len(tasks)}")
     solved = 0
     for task in tasks:
         try:
             outcome = run_task_llm(task, 1, skills, prompts.active("planner"), prompts.active("reflector"),
                                    prompts.active("critic"), pack, client)
-        except (GroqConfigError, LLMCacheMiss) as exc:
+        except (LLMConfigError, LLMCacheMiss) as exc:
             print(f"error: {exc}", file=sys.stderr)
             return 2
         solved += outcome.solved
@@ -284,7 +290,10 @@ def cmd_library_diff(args: argparse.Namespace) -> int:
 # parser
 
 def _add_llm_args(p: argparse.ArgumentParser) -> None:
-    p.add_argument("--model", help="Groq model id (default: $GROQ_MODEL)")
+    p.add_argument("--provider", choices=("gemini", "groq"),
+                   help="LLM provider (default: $LLM_PROVIDER, else whichever API key is set)")
+    p.add_argument("--model", help="model id (default: $LLM_MODEL, else the provider's default: "
+                                   "gemma-4-31b-it on gemini, openai/gpt-oss-20b on groq)")
     p.add_argument("--llm-cache", metavar="PATH",
                    help="JSONL cassette recording every prompt/response (cambium.agent.llm_cache)")
     p.add_argument("--llm-mode", choices=("record", "replay", "auto"), default="auto",
@@ -330,7 +339,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--curated-only", action="store_true")
     p.set_defaults(func=cmd_stress)
 
-    p = sub.add_parser("llm-demo", parents=[common], help="live-LLM smoke test (needs GROQ_API_KEY)")
+    p = sub.add_parser("llm-demo", parents=[common], help="live-LLM smoke test (needs GEMINI_API_KEY or GROQ_API_KEY)")
     _add_llm_args(p)
     p.add_argument("--limit", type=int, default=0, help="max tasks (default: one per category)")
     p.set_defaults(func=cmd_llm_demo)
@@ -364,12 +373,12 @@ def main(argv: list[str] | None = None) -> int:
         return 130
     except Exception as exc:  # surfaced as a clean one-line error; --log-level DEBUG for the trace
         from cambium.agent.llm_cache import LLMCacheMiss
-        from cambium.agent.llm_client import GroqConfigError
+        from cambium.agent.llm_client import LLMConfigError
         from cambium.library.store import LibraryStoreError
         from cambium.sandbox.runner import SandboxBackendError
 
         if isinstance(exc, (SandboxBackendError, LibraryStoreError, FileNotFoundError, ValueError,
-                            LLMCacheMiss, GroqConfigError)):
+                            LLMCacheMiss, LLMConfigError)):
             log.debug("command failed", exc_info=True)
             print(f"error: {exc}", file=sys.stderr)
             return 2
