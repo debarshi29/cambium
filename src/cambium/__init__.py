@@ -4,4 +4,4 @@ the artifacts under study, not its weights or memory.
 See CLAUDE.md at the repo root for the full project spec.
 """
 
-__version__ = "0.7.0"
+__version__ = "1.0.0"

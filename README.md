@@ -7,7 +7,9 @@ artifacts under study** — admission-gated, retrieved, curated, and
 evaluated against held-out tasks.
 
 ![Python 3.13+](https://img.shields.io/badge/python-3.13%2B-blue)
-![status: scaled demo](https://img.shields.io/badge/status-scaled%20demo-yellow)
+![version 1.0.0](https://img.shields.io/badge/version-1.0.0-green)
+![typed: mypy](https://img.shields.io/badge/typed-mypy-blue)
+![coverage ≥ 88%](https://img.shields.io/badge/coverage-%E2%89%A588%25-green)
 [![CI](https://github.com/debarshi29/cambium/actions/workflows/ci.yml/badge.svg)](https://github.com/debarshi29/cambium/actions/workflows/ci.yml)
 [![license: MIT](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
@@ -37,28 +39,28 @@ evaluated against held-out tasks.
 
 ## Read this first
 
-This is a **scaled-down demo run**, built in one continuous session with no
-live LLM access — not the full ~60-task, months-long research program
-`CLAUDE.md` specifies. Three things to know before trusting any number
-below:
+cambium runs the full ~60-task design `CLAUDE.md` specifies, with
+admission gates for skills and prompts, measured retrieval, curation that
+has been stress-tested, and a hardened sandbox. Three things to know
+before trusting any number below:
 
 | | |
 |---|---|
 | 🤖 **The curves below are a scripted agent, not a live model.** | The three curves and the attribution ablation measure the library harness — admission gates, retrieval, curation, evaluation — operating on a deterministic generator, not an LLM's code-generation ability. A live path *does* exist ([ADR 0007](docs/adr/0007-live-llm-integration.md)) but is kept out of the reported curves on purpose (determinism, cost, reproducibility). → [ADR 0002](docs/adr/0002-agent-stand-in.md) |
 | 📦 **60 tasks, at spec size — but still small-n.** | 40 train / 20 held-out across 20 categories, as CLAUDE.md §4 specifies. Read every percentage as "N of 20 held-out," not as a statistically powered result. → [ADR 0010](docs/adr/0010-full-task-pack.md) |
-| 🔒 **Subprocess isolation, not containers.** | Candidate code runs in a scrubbed-environment child process with a hard timeout — real isolation, but not the container tier `CLAUDE.md` prefers. → [ADR 0004](docs/adr/0004-sandbox-tier.md) |
+| 🔒 **Two sandbox tiers.** | The reported curves use the hardened subprocess tier (audit hook, rlimits, results judged by the parent, so candidate code can't fake a pass). A Docker tier (`--sandbox docker`: no network, read-only root, dropped capabilities) is tested in CI and recommended for live-model runs. → [ADR 0008](docs/adr/0008-sandbox-hardening.md), [ADR 0009](docs/adr/0009-container-sandbox.md), [SECURITY.md](SECURITY.md) |
 
-[**ADR 0006**](docs/adr/0006-sprint-6-wrapup.md) is the honest scorecard:
-what shipped, what didn't, and exactly what the results do and don't
-support.
+[**ADR 0013**](docs/adr/0013-v1-wrapup.md) is the honest scorecard for
+v1.0: what shipped, the bugs that production-hardening uncovered, and
+exactly what the results do and don't support.
 
 ---
 
 ## Results
 
-**[→ Interactive results dashboard](https://claude.ai/code/artifact/bcd4a571-b7e1-4f6a-a0da-89590c3c3edf)** — the
-same numbers below as a hoverable trajectory chart, a final-state
-comparison, and the reward-hacking audit, in one page.
+**[→ Interactive results dashboard](https://claude.ai/code/artifact/bcd4a571-b7e1-4f6a-a0da-89590c3c3edf)**: a
+hoverable trajectory chart, a final-state comparison, and the
+reward-hacking audit, in one page.
 
 ### The three curves + attribution ablation
 
@@ -155,10 +157,14 @@ system/base Python.
 ```bash
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-python -m pytest                 # 82 tests, ~80s
-ruff check .                     # lint, same check CI runs
+pip install -r requirements.txt && pip install -e .
+python -m pytest -n auto         # ~160 tests, no network, no API key
+ruff check . && mypy             # lint + types, same checks CI runs
 ```
+
+With [uv](https://docs.astral.sh/uv/): `uv sync --group dev`, then prefix
+commands with `uv run`. With Docker: `docker build -t cambium .` then
+`docker run --rm cambium eval --no-mlflow`.
 
 Scripts under `scripts/` run directly against `src/` with no install step
 (each starts with `import _pathfix`). To `import cambium` from elsewhere
@@ -316,13 +322,14 @@ if either drifts from `src/cambium/`, the code wins.
 | [0010](docs/adr/0010-full-task-pack.md) | Task pack grown to spec size: 60 tasks, 40 train / 20 held-out |
 | [0011](docs/adr/0011-curation-stress-test.md) | Curation stress test, and the two curation flaws it found |
 | [0012](docs/adr/0012-llm-record-replay.md) | Reproducible live-LLM runs via record/replay; the harness on the LLM agent |
+| [0013](docs/adr/0013-v1-wrapup.md) | v1.0 wrap-up: what's production-grade, what the results support, what's open |
 
 ---
 
 ## Project history
 
-Built across six sprints; every sprint landed as its own PR with a real
-test suite passing before merge:
+Built in sprints; every change landed as its own PR with CI passing
+before merge. [CHANGELOG.md](CHANGELOG.md) has the detail.
 
 - [x] **Sprint 1** — task pack, sandbox runner, skill schema + registry, baseline eval
 - [x] **Sprint 2** — admission gates (skills + prompts), candidate generation
@@ -330,8 +337,15 @@ test suite passing before merge:
 - [x] **Sprint 4** — curation: dedup, decay deprecation, size cap
 - [x] **Sprint 5** — eval harness: three curves, attribution ablation, hacking audit
 - [x] **Sprint 6** — hardening, ADRs, README with results, demo script
+- [x] **Sprints 7–9** — live Groq LLM path, HLD/LLD, CI, architecture diagram
+- [x] **v1.0** — packaging/CI hygiene · persistent tamper-checked libraries ·
+  sandbox hardening (two forgery holes closed) · Docker sandbox tier ·
+  60-task pack at spec size · sandbox verdict cache + parallel tests ·
+  25-generation curation stress test (two curation flaws fixed) · `cambium`
+  CLI · record/replay for live-LLM runs · mypy, coverage gate, Docker image
 
 See the closed PRs and `docs/adr/` for the decisions — including the ones
 that changed course mid-sprint: the 20→27 task pack fix in Sprint 2, the
-singleton-registry bug fix in Sprint 4, and the eval-only-scoring fix in
-Sprint 5.
+singleton-registry bug fix in Sprint 4, the eval-only-scoring fix in
+Sprint 5, and the curation fixes the v1.0 stress test forced
+([ADR 0011](docs/adr/0011-curation-stress-test.md)).
