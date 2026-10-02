@@ -21,3 +21,16 @@ def _fresh_sandbox_backend():
     set_default_backend(_SESSION_BACKEND)
     yield
     set_default_backend(_SESSION_BACKEND)
+
+
+_LLM_ENV = ("GROQ_API_KEY", "GEMINI_API_KEY", "LLM_PROVIDER", "LLM_MODEL", "GROQ_MODEL", "GEMINI_MODEL")
+
+
+@pytest.fixture(autouse=True)
+def _no_real_llm_credentials(monkeypatch):
+    """cambium.agent.llm_client calls load_dotenv() on import, so a
+    developer's real key in .env would otherwise be visible to every test,
+    and a test of the "no key" path could quietly make a live, billed API
+    call. Tests that need a key set a fake one themselves."""
+    for name in _LLM_ENV:
+        monkeypatch.delenv(name, raising=False)

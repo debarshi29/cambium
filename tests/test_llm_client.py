@@ -19,7 +19,7 @@ def test_chat_happy_path_returns_message_content(monkeypatch):
     monkeypatch.setenv("GROQ_API_KEY", "test-key")
     client = GroqClient(retries=0)
 
-    fake_response = MagicMock()
+    fake_response = MagicMock(status_code=200)
     fake_response.raise_for_status = MagicMock()
     fake_response.json.return_value = {
         "choices": [{"message": {"content": "def f(): return 1"}}]

@@ -128,3 +128,26 @@ def test_cli_replay_requires_a_cassette(tmp_path, capsys):
                "--freeze-at", "1", "--no-mlflow", "--out", str(tmp_path)])
     assert rc == 2
     assert "--llm-cache" in capsys.readouterr().err
+
+
+def test_cli_replay_finds_what_the_cli_client_recorded(tmp_path, monkeypatch):
+    """Regression: CLI replay built its cassette key with temperature=0 and
+    max_tokens=0, while recording used the client's real values (0.2,
+    800/4096), so replay could never hit a recorded prompt."""
+    from argparse import Namespace
+
+    from cambium.agent.llm_client import LLMClient
+    from cambium.cli import _llm_client
+
+    monkeypatch.setenv("GEMINI_API_KEY", "g-key")
+    cassette = tmp_path / "c.jsonl"
+    live = LLMClient()
+    oracle = OracleChat()
+    oracle.model, oracle.temperature, oracle.max_tokens = live.model, live.temperature, live.max_tokens
+    RecordReplayClient(cassette, mode="record", inner=oracle).chat("GENERAL or OVERFIT?", "the user")
+
+    monkeypatch.delenv("GEMINI_API_KEY")  # replay must work with no key at all
+    monkeypatch.setenv("LLM_PROVIDER", "gemini")
+    replay = _llm_client(Namespace(provider=None, model=None, llm_mode="replay",
+                                   llm_cache=str(cassette)))
+    assert replay.chat("GENERAL or OVERFIT?", "the user") == "GENERAL"
