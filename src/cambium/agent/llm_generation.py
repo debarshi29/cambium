@@ -3,7 +3,7 @@
 
 docs/adr/0002-agent-stand-in.md named "swap a real model behind the
 generation seam" as the single highest-priority gap; this module is that
-swap, driving `cambium.agent.llm_client.GroqClient`. It is deliberately
+swap, driving `cambium.agent.llm_client.LLMClient`. It is deliberately
 kept *separate* from generation.py rather than replacing it: the scripted
 bank stays the default path for the eval harness, because CLAUDE.md §6
 requires determinism ("seed everything... log prompts") and a live model
@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import re
 
-from cambium.agent.llm_client import GroqClient
+from cambium.agent.llm_client import LLMClient
 from cambium.tasks.schema import Task
 
 _CODEGEN_SYSTEM = (
@@ -35,14 +35,16 @@ _CRITIC_SYSTEM = (
 )
 
 _CODE_BLOCK_RE = re.compile(r"```(?:python)?\s*(.*?)```", re.DOTALL)
+_VERDICT_RE = re.compile(r"\b(GENERAL|OVERFIT)\b")
 
 
 def extract_code(text: str) -> str:
-    """Pull a function body out of an LLM reply. Handles a fenced code
-    block if present (the common case, since the system prompt asks for
-    one); otherwise assumes the whole reply is code."""
-    match = _CODE_BLOCK_RE.search(text)
-    body = match.group(1) if match else text
+    """Pull a function body out of an LLM reply. Uses the *last* fenced
+    code block: a model that drafts before answering (Gemma 4's thinking
+    mode) puts its final answer last. Falls back to the whole reply when
+    there is no fence."""
+    blocks = _CODE_BLOCK_RE.findall(text)
+    body = blocks[-1] if blocks else text
     return body.strip()
 
 
@@ -83,7 +85,7 @@ def build_generation_prompt(
 
 def llm_generate(
     task: Task,
-    client: GroqClient,
+    client: LLMClient,
     prior_source: str | None = None,
     prior_error: str | None = None,
 ) -> str:
@@ -93,7 +95,7 @@ def llm_generate(
     return extract_code(reply)
 
 
-def llm_critic_is_general(source: str, task: Task, client: GroqClient) -> bool:
+def llm_critic_is_general(source: str, task: Task, client: LLMClient) -> bool:
     """Live counterpart to the scripted `min_lines` heuristic in
     `cambium.agent.generation`/`loop.py`'s critic step: asks the model
     itself whether a passing candidate looks like a generalizable solution
@@ -104,5 +106,8 @@ def llm_critic_is_general(source: str, task: Task, client: GroqClient) -> bool:
     judgment here disagrees with what the gate finds on re-run, the gate's
     verdict wins; this only gates whether a proposal is attempted."""
     prompt = f"Task: {task.prompt}\n\nCandidate solution:\n```python\n{source}\n```"
-    reply = client.chat(_CRITIC_SYSTEM, prompt).strip().upper()
-    return "OVERFIT" not in reply
+    reply = client.chat(_CRITIC_SYSTEM, prompt).upper()
+    # The *last* verdict wins: a model that reasons before answering may
+    # mention both words on the way ("is this OVERFIT? ... GENERAL").
+    verdicts = _VERDICT_RE.findall(reply)
+    return not verdicts or verdicts[-1] != "OVERFIT"
