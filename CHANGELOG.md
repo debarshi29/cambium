@@ -2,9 +2,12 @@
 
 All notable changes to this project. Dates are merge dates.
 
-## [Unreleased]
+## [1.0.0] - 2026-10-02
 
 ### Added
+- ADR 0013 (v1.0 wrap-up); HLD/LLD brought in line with the code.
+
+### Added (quality gates)
 - Type checking with mypy in CI and pre-commit; 88% coverage gate.
 - `Dockerfile` for a reproducible experiment environment, built and smoke-tested in CI.
 - `SECURITY.md` (sandbox threat model), `CONTRIBUTING.md`, Dependabot.
