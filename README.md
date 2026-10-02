@@ -186,7 +186,7 @@ cambium stress                    # 25-generation curation stress test
 cambium tasks --split heldout     # list the pack
 cambium library show results/library_both_evolving.json
 cambium library diff old.json new.json --exit-code
-cambium llm-demo                  # live model, needs GROQ_API_KEY
+cambium llm-demo                  # live model, needs GEMINI_API_KEY or GROQ_API_KEY
 ```
 
 Global options: `--sandbox subprocess|docker`, `--[no-]sandbox-cache`,
@@ -236,9 +236,23 @@ generated skills admitted, real reuse check against a second task each).
 Try it yourself:
 
 ```bash
-cp .env.example .env        # then paste in a Groq API key
+cp .env.example .env        # then paste in a Gemini (or Groq) API key
 cambium llm-demo            # one task per category, live
 ```
+
+Two providers speak the same OpenAI-compatible API
+([ADR 0014](docs/adr/0014-gemini-provider.md)):
+
+| provider | key in `.env` | default model |
+|---|---|---|
+| Gemini API | `GEMINI_API_KEY` | `gemma-4-31b-it` (Gemma 4 31B) |
+| Groq | `GROQ_API_KEY` | `openai/gpt-oss-20b` |
+
+Pick one with `--provider gemini|groq` (or `LLM_PROVIDER`); otherwise
+whichever key is set is used. Override the model with `--model` or
+`GEMINI_MODEL` / `GROQ_MODEL`. Use the model **id** (`gemma-4-31b-it`),
+not its display name. Verified live: Gemma 4 31B solved 3/3 demo tasks,
+and all three skills it wrote passed the admission gate's reuse check.
 
 **The full eval on the live model, reproducibly** ([ADR 0012](docs/adr/0012-llm-record-replay.md)):
 the harness takes a pluggable agent, and every prompt/response is recorded
@@ -277,7 +291,7 @@ cambium/
 ├── skills/       skill schema, versioned registry, admission gate
 ├── prompts/      prompt schema, versioned-per-node registry, admission gate
 ├── agent/        base capabilities, scripted generation stand-in, the loop
-│                 (+ live Groq path: llm_client, llm_generation, run_task_llm)
+│                 (+ live LLM path, Gemini or Groq: llm_client, llm_generation, run_task_llm)
 ├── retrieval/    keyword-overlap index + recall@k instrumentation
 ├── curation/     dedup, decay deprecation, size cap, version archiving
 └── eval/         eval-only scoring, harness (curves + ablation), hacking
@@ -323,6 +337,7 @@ if either drifts from `src/cambium/`, the code wins.
 | [0011](docs/adr/0011-curation-stress-test.md) | Curation stress test, and the two curation flaws it found |
 | [0012](docs/adr/0012-llm-record-replay.md) | Reproducible live-LLM runs via record/replay; the harness on the LLM agent |
 | [0013](docs/adr/0013-v1-wrapup.md) | v1.0 wrap-up: what's production-grade, what the results support, what's open |
+| [0014](docs/adr/0014-gemini-provider.md) | Gemini API as a second LLM provider (Gemma 4 31B) |
 
 ---
 

@@ -48,6 +48,7 @@ tier's audit hook is a CPython-level control, not a syscall filter.
 
 ## Secrets
 
-`GROQ_API_KEY` is read from the environment or a git-ignored `.env`. It is
-never passed to sandboxed code. LLM cassettes (`--llm-cache`) contain
+`GEMINI_API_KEY` / `GROQ_API_KEY` are read from the environment or a git-ignored `.env`. They are
+never passed to sandboxed code (the sandbox child gets an empty environment),
+and the test suite clears them before every test. LLM cassettes (`--llm-cache`) contain
 prompts and responses, not keys.

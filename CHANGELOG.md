@@ -2,6 +2,22 @@
 
 All notable changes to this project. Dates are merge dates.
 
+## [1.1.0] - 2026-10-03
+
+### Added
+- Gemini API as a second LLM provider, defaulting to Gemma 4 31B
+  (`gemma-4-31b-it`); `--provider`, `LLM_PROVIDER`, `LLM_MODEL` (ADR 0014).
+  Verified live: 3/3 demo tasks solved, 3 skills admitted.
+- LLM replies are parsed for thinking models: last code block, last verdict.
+
+### Fixed
+- `cambium eval --llm-mode replay` could never find what a CLI recording
+  stored (mismatched cassette keys).
+- A rejected request (e.g. a bad model id) was retried and surfaced as a
+  traceback; it now fails fast with the API's own message.
+- Tests could see a real API key from `.env`; provider keys are now
+  cleared before every test.
+
 ## [1.0.0] - 2026-10-02
 
 ### Added
