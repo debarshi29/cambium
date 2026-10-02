@@ -86,10 +86,13 @@ def test_custom_task_dir(tmp_path, capsys):
     assert "2 task(s)" in capsys.readouterr().out
 
 
-def test_llm_demo_without_key_fails_cleanly(monkeypatch, capsys):
-    monkeypatch.delenv("GROQ_API_KEY", raising=False)
-    import cambium.agent.llm_client as llm_client
-
-    monkeypatch.setattr(llm_client, "load_dotenv", lambda *a, **k: None, raising=False)
+def test_llm_demo_without_key_fails_cleanly(capsys):
+    # conftest clears every provider key, so this must fail before any request
     assert main(["llm-demo", "--limit", "4"]) == 2
     assert "GROQ_API_KEY" in capsys.readouterr().err
+
+
+def test_llm_demo_names_the_gemini_key_when_gemini_is_chosen(capsys):
+    assert main(["llm-demo", "--provider", "gemini", "--limit", "1"]) == 2
+    err = capsys.readouterr().err
+    assert "GEMINI_API_KEY" in err and "aistudio.google.com" in err

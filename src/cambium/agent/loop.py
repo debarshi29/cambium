@@ -119,7 +119,7 @@ def run_task_llm(
     `CANDIDATE_BANK`, and the critic's propose-or-not decision asks the
     model too, instead of the `min_lines` heuristic. Everything upstream of
     generation and the admission gate itself are untouched -- this is the
-    ADR 0002 seam, exercised for real. `client` is a `GroqClient` (or any
+    ADR 0002 seam, exercised for real. `client` is an `LLMClient` (or any
     object with a matching `.chat(system, user) -> str` method, e.g. a test
     stub). Not used by the reproducible eval curves in the README (a live
     model call is neither deterministic nor free, CLAUDE.md §6); see

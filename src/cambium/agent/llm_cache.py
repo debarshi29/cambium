@@ -53,7 +53,7 @@ def request_key(model: str, temperature: float, max_tokens: int, system: str, us
 
 
 class RecordReplayClient:
-    """Drop-in for GroqClient (anything with `.chat(system, user)`)."""
+    """Drop-in for LLMClient (anything with `.chat(system, user)`)."""
 
     def __init__(self, cassette: Path | str, mode: str = "auto", inner: ChatClient | None = None,
                  model: str | None = None, temperature: float | None = None,

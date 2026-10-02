@@ -1,5 +1,6 @@
-"""Live smoke test: real tasks through the Groq-backed agent loop
-(docs/adr/0007). Requires GROQ_API_KEY in .env or the environment. Kept
+"""Live smoke test: real tasks through the LLM-backed agent loop
+(docs/adr/0007, 0014). Requires GEMINI_API_KEY or GROQ_API_KEY in .env or
+the environment. Kept
 out of the reproducible curves on purpose: a live model call is neither
 deterministic nor free.
 
