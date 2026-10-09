@@ -1,6 +1,6 @@
 # Runtime
 mlflow-skinny>=3.0
-sqlalchemy>=2.0
+sqlalchemy>=2.1.3
 alembic>=1.13
 requests>=2.31
 python-dotenv>=1.0
