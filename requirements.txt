@@ -1,6 +1,6 @@
 # Runtime
-mlflow-skinny>=3.0
-sqlalchemy>=2.0
+mlflow-skinny>=3.17.0
+sqlalchemy>=2.1.4
 alembic>=1.13
 requests>=2.31
 python-dotenv>=1.0
@@ -8,6 +8,6 @@ python-dotenv>=1.0
 pytest>=9.0
 pytest-cov>=6.0
 pytest-xdist>=3.6
-ruff>=0.6
+ruff>=0.17.0
 mypy>=1.13
-types-requests>=2.31
+types-requests>=2.33.0.20261006
